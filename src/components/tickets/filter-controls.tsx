@@ -1,3 +1,4 @@
+
 "use client";
 
 import { Input } from "@/components/ui/input";
@@ -8,8 +9,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { RepairType, TicketStatus } from "@/lib/types";
-import { defaultRepairTypes, ticketStatuses } from "@/lib/types"; // Using default as a fallback
+import type { RepairType, TicketStatus, ImportanceLevel } from "@/lib/types";
+import { defaultRepairTypes, ticketStatuses, importanceLevels } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
 import { Card } from "@/components/ui/card";
@@ -22,6 +23,7 @@ interface FilterControlsProps {
     repairType: RepairType | "All";
     location: string;
     status: TicketStatus | "All";
+    importance: ImportanceLevel | "All";
   };
   onFilterChange: (filters: FilterControlsProps["filters"]) => void;
 }
@@ -46,17 +48,18 @@ export default function FilterControls({ filters, onFilterChange }: FilterContro
       repairType: "All",
       location: "",
       status: "All",
+      importance: "All",
     });
   };
 
   return (
     <Card className="mb-6 p-4">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 items-end">
         <div>
           <Label htmlFor="filter-location">Ubicación</Label>
           {availableLocations.length > 0 ? (
             <Select
-              value={filters.location || "All"} // Use "All" or "" if no specific value is selected
+              value={filters.location || "All"}
               onValueChange={(value) => onFilterChange({ ...filters, location: value === "All" ? "" : value })}
             >
               <SelectTrigger id="filter-location" className="mt-1">
@@ -91,7 +94,7 @@ export default function FilterControls({ filters, onFilterChange }: FilterContro
               <SelectValue placeholder="Filtrar por tipo de reparación" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="All">Todos los Tipos de Reparación</SelectItem>
+              <SelectItem value="All">Todos los Tipos</SelectItem>
               {availableRepairTypes.map((type) => (
                 <SelectItem key={type} value={type}>
                   {type}
@@ -119,8 +122,27 @@ export default function FilterControls({ filters, onFilterChange }: FilterContro
             </SelectContent>
           </Select>
         </div>
+        <div>
+          <Label htmlFor="filter-importance">Importancia</Label>
+          <Select
+            value={filters.importance}
+            onValueChange={(value: ImportanceLevel | "All") => onFilterChange({ ...filters, importance: value })}
+          >
+            <SelectTrigger id="filter-importance" className="mt-1">
+              <SelectValue placeholder="Filtrar por importancia" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="All">Toda Importancia</SelectItem>
+              {importanceLevels.map((level) => (
+                <SelectItem key={level} value={level}>
+                  {level}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
         <Button onClick={handleResetFilters} variant="outline" className="w-full lg:w-auto">
-          <X className="mr-2 h-4 w-4" /> Restablecer Filtros
+          <X className="mr-2 h-4 w-4" /> Restablecer
         </Button>
       </div>
     </Card>

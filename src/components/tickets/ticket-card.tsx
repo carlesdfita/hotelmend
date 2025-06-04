@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import type { Ticket, TicketStatus, RepairType } from "@/lib/types";
+import type { Ticket, TicketStatus, RepairType, ImportanceLevel } from "@/lib/types";
 import {
   Zap,
   Wrench,
@@ -19,13 +19,17 @@ import {
   Lightbulb,
   Wind,
   ClipboardList,
-  CircleAlert,
-  CircleDotDashed,
-  CheckCircle2,
+  CircleAlert, // Status: Abierta
+  CircleDotDashed, // Status: En Progreso
+  CheckCircle2, // Status: Cerrada
+  AlertTriangle, // Importance: Urgente
+  Shield, // Importance: Importante
+  ChevronDownCircle, // Importance: Poco Importante
   CalendarDays,
   MapPin,
   Construction, 
-  Edit3, // Import Edit3 icon
+  Edit3,
+  MoreVertical,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -34,7 +38,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { MoreVertical } from 'lucide-react';
 import React from "react";
 
 interface TicketCardProps {
@@ -52,16 +55,23 @@ const repairTypeIcons: Record<string, React.ElementType> = {
   "General": ClipboardList,
 };
 
-const statusInfo: Record<TicketStatus, { icon: React.ElementType; colorClass: string; variant: "default" | "secondary" | "destructive" | "outline" | null | undefined }> = {
-  "Abierta": { icon: CircleAlert, colorClass: "bg-red-500", variant: "destructive" },
-  "En Progreso": { icon: CircleDotDashed, colorClass: "bg-yellow-500", variant: "secondary" },
-  "Cerrada": { icon: CheckCircle2, colorClass: "bg-green-500", variant: "default" },
+const statusInfo: Record<TicketStatus, { icon: React.ElementType; variant: "default" | "secondary" | "destructive" | "outline" | null | undefined }> = {
+  "Abierta": { icon: CircleAlert, variant: "destructive" },
+  "En Progreso": { icon: CircleDotDashed, variant: "secondary" },
+  "Cerrada": { icon: CheckCircle2, variant: "default" },
+};
+
+const importanceInfo: Record<ImportanceLevel, { icon: React.ElementType; variant: "default" | "secondary" | "destructive" | "outline" | null | undefined; label: string }> = {
+  "Urgente": { icon: AlertTriangle, variant: "destructive", label: "Urgente" },
+  "Importante": { icon: Shield, variant: "default", label: "Importante" },
+  "Poco Importante": { icon: ChevronDownCircle, variant: "outline", label: "Poco Imp." },
 };
 
 
 export default function TicketCard({ ticket, onUpdateStatus, onEditTicket }: TicketCardProps) {
   const RepairIcon = repairTypeIcons[ticket.repairType] || Construction;
   const StatusIcon = statusInfo[ticket.status].icon;
+  const ImportanceIcon = importanceInfo[ticket.importance].icon;
 
   const handleStatusChange = (newStatus: TicketStatus) => {
     onUpdateStatus(ticket.id, newStatus);
@@ -75,10 +85,16 @@ export default function TicketCard({ ticket, onUpdateStatus, onEditTicket }: Tic
               <RepairIcon className="mr-1.5 h-3.5 w-3.5 text-primary" />
               {ticket.repairType}
             </CardTitle>
-             <Badge variant={statusInfo[ticket.status].variant || 'default'} className="text-xs px-1.5 py-0.5 h-[18px] leading-tight">
-               <StatusIcon className="mr-1 h-2.5 w-2.5" />
-              {ticket.status}
-            </Badge>
+            <div className="flex items-center gap-1.5">
+              <Badge variant={importanceInfo[ticket.importance].variant || 'default'} className="text-xs px-1.5 py-0.5 h-[18px] leading-tight">
+                <ImportanceIcon className="mr-1 h-2.5 w-2.5" />
+                {importanceInfo[ticket.importance].label}
+              </Badge>
+              <Badge variant={statusInfo[ticket.status].variant || 'default'} className="text-xs px-1.5 py-0.5 h-[18px] leading-tight">
+                <StatusIcon className="mr-1 h-2.5 w-2.5" />
+                {ticket.status}
+              </Badge>
+            </div>
         </div>
         <p className="text-xs text-foreground leading-snug line-clamp-2 mb-1 sm:mb-1.5">{ticket.description}</p>
         <div className="flex justify-between items-center text-xs text-muted-foreground">

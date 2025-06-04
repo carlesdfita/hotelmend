@@ -22,8 +22,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { Ticket, RepairType, SuggestedTicket } from "@/lib/types";
-import { defaultRepairTypes } from "@/lib/types"; 
+import type { Ticket, RepairType, SuggestedTicket, ImportanceLevel } from "@/lib/types";
+import { defaultRepairTypes, importanceLevels } from "@/lib/types"; 
 import { suggestRelatedTickets } from "@/ai/flows/suggest-related-tickets";
 import React, { useState, useMemo, useCallback, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -33,6 +33,7 @@ const ticketFormSchema = z.object({
   description: z.string().min(10, { message: "La descripción debe tener al menos 10 caracteres." }),
   location: z.string().min(1, { message: "La ubicación es obligatoria." }),
   repairType: z.string().min(1, { message: "El tipo de reparación es obligatorio."}),
+  importance: z.enum(importanceLevels, { message: "La importancia es obligatoria."}),
 });
 
 export type TicketFormValues = z.infer<typeof ticketFormSchema>;
@@ -73,27 +74,25 @@ export default function TicketForm({ onSubmit, initialData, submitButtonText = "
   
   const form = useForm<TicketFormValues>({
     resolver: zodResolver(ticketFormSchema),
-    defaultValues: initialData || {}, // Default values are now more effectively handled by useEffect
+    defaultValues: initialData || { importance: "Importante" },
   });
   
   useEffect(() => {
     if (initialData && Object.keys(initialData).length > 0) {
       form.reset(initialData);
-      // Handle "Otra" location for editing
       if (initialData.location && !availableLocations.includes(initialData.location) && initialData.location !== 'Otra') {
         setIsCustomLocationActive(true);
         setCustomLocationValue(initialData.location);
-        // We keep initialData.location as is in the form, Select will display it if not in options
       } else {
         setIsCustomLocationActive(false);
         setCustomLocationValue("");
       }
     } else {
-      // For creating a new ticket or if initialData is empty
       form.reset({
         description: "",
         location: availableLocations.length > 0 ? availableLocations[0] : "",
         repairType: availableRepairTypes.length > 0 ? availableRepairTypes[0] : "General",
+        importance: "Importante", // Default importance for new tickets
       });
       setIsCustomLocationActive(false);
       setCustomLocationValue("");
@@ -138,15 +137,12 @@ export default function TicketForm({ onSubmit, initialData, submitButtonText = "
       }
       finalData.location = customLocationValue.trim();
     } else if (data.location === 'Otra' && !isCustomLocationActive) {
-       // This case should ideally not happen if UI is right, but as a safeguard
        form.setError("location", {type: "manual", message: "Seleccione 'Otra' y especifique la ubicación."});
        return;
     }
     
     onSubmit(finalData);
-    // Form reset is handled by parent dialog closing or by useEffect when initialData changes.
     setSuggestedTickets([]);
-    // Reset custom location fields for next use if it's a create form context
     if (!initialData) {
         setIsCustomLocationActive(false);
         setCustomLocationValue("");
@@ -211,14 +207,10 @@ export default function TicketForm({ onSubmit, initialData, submitButtonText = "
                     field.onChange(value);
                     if (value === 'Otra') {
                       setIsCustomLocationActive(true);
-                      // If editing and switching to 'Otra', preserve existing custom text if any, or clear for new input.
-                      // For now, if they switch to 'Otra', they are expected to type/confirm.
-                      // If initialData.location was custom, customLocationValue is already set.
-                      // If they select 'Otra' from a predefined, customLocationValue may be empty.
                       if (initialData?.location && !availableLocations.includes(initialData.location) && value === 'Otra') {
-                         setCustomLocationValue(initialData.location); // Keep if was custom
+                         setCustomLocationValue(initialData.location);
                       } else {
-                         setCustomLocationValue(''); // Clear for new custom input or if switched from predefined
+                         setCustomLocationValue('');
                       }
                     } else {
                       setIsCustomLocationActive(false);
@@ -242,29 +234,19 @@ export default function TicketForm({ onSubmit, initialData, submitButtonText = "
                   </SelectContent>
                 </Select>
               ) : (
-                 // Fallback to input if no predefined locations (also handles initial custom value for edit)
                 <FormControl>
                   <Input 
                     placeholder="ej: Habitación 101, Vestíbulo, Cocina" 
                     {...field} 
-                    // If there are no available locations, this input is the direct source
-                    // and the "Otra" logic is not needed here.
-                    // isCustomLocationActive should be true in this scenario.
-                    // And customLocationValue should mirror field.value.
-                    // This part is simplified: if no availableLocations, it's just a text input.
-                    // The 'useEffect' populates field.value correctly for edit.
-                    // For create, it's an empty input.
                     onChange={(e) => {
                         field.onChange(e.target.value);
-                        // If there are no predefined locations, this input is the direct source.
-                        // We can treat this as a custom location scenario by default.
                         setIsCustomLocationActive(true); 
                         setCustomLocationValue(e.target.value);
                     }}
                   />
                 </FormControl>
               )}
-              {isCustomLocationActive && availableLocations.length > 0 && ( // Only show custom input if 'Otra' is selected AND there are predefined options
+              {isCustomLocationActive && availableLocations.length > 0 && (
                  <FormControl>
                     <Input 
                         placeholder="Especificar otra ubicación" 
@@ -274,12 +256,12 @@ export default function TicketForm({ onSubmit, initialData, submitButtonText = "
                     />
                  </FormControl>
               )}
-               {!availableLocations.length && ( // If no predefined locations, ensure the input is directly tied to the form value
+               {!availableLocations.length && (
                   <Input
                     placeholder="ej: Habitación 101, Vestíbulo, Cocina"
                     value={field.value}
                     onChange={(e) => field.onChange(e.target.value)}
-                    className="hidden" // This is just to satisfy RHF, actual input rendered above
+                    className="hidden"
                   />
                 )}
               <FormMessage />
@@ -303,6 +285,31 @@ export default function TicketForm({ onSubmit, initialData, submitButtonText = "
                   {availableRepairTypes.map((type) => (
                     <SelectItem key={type} value={type}>
                       {type}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="importance"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Importancia</FormLabel>
+              <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Seleccionar nivel de importancia" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {importanceLevels.map((level) => (
+                    <SelectItem key={level} value={level}>
+                      {level}
                     </SelectItem>
                   ))}
                 </SelectContent>

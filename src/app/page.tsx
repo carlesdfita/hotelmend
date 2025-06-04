@@ -15,8 +15,8 @@ import {
   DialogTrigger,
   DialogDescription,
 } from '@/components/ui/dialog';
-import type { Ticket, RepairType, TicketStatus } from '@/lib/types';
-import { PlusCircle, Hotel, Edit3 } from 'lucide-react'; // Added Edit3 icon
+import type { Ticket, RepairType, TicketStatus, ImportanceLevel } from '@/lib/types';
+import { PlusCircle } from 'lucide-react';
 
 export default function HomePage() {
   const [tickets, setTickets] = useState<Ticket[]>([]);
@@ -33,6 +33,7 @@ export default function HomePage() {
         location: 'Habitación 305',
         repairType: 'Iluminación',
         status: 'Abierta',
+        importance: 'Importante',
         createdAt: new Date(new Date().setDate(new Date().getDate() - 2)), 
         updatedAt: new Date(new Date().setDate(new Date().getDate() - 2)),
       },
@@ -42,6 +43,7 @@ export default function HomePage() {
         location: 'Cocina Principal',
         repairType: 'Fontanería',
         status: 'En Progreso',
+        importance: 'Urgente',
         createdAt: new Date(new Date().setDate(new Date().getDate() - 1)), 
         updatedAt: new Date(),
       },
@@ -51,6 +53,7 @@ export default function HomePage() {
         location: 'Gimnasio',
         repairType: 'Climatización',
         status: 'Abierta',
+        importance: 'Importante',
         createdAt: new Date(),
         updatedAt: new Date(),
       },
@@ -60,6 +63,7 @@ export default function HomePage() {
         location: 'Recepción Vestíbulo',
         repairType: 'Carpintería',
         status: 'Cerrada',
+        importance: 'Poco Importante',
         createdAt: new Date(new Date().setDate(new Date().getDate() - 5)),
         updatedAt: new Date(new Date().setDate(new Date().getDate() - 3)),
       },
@@ -103,10 +107,11 @@ export default function HomePage() {
     );
   };
 
-  const [filters, setFilters] = useState<{ repairType: RepairType | 'All'; location: string; status: TicketStatus | 'All' }>({
+  const [filters, setFilters] = useState<{ repairType: RepairType | 'All'; location: string; status: TicketStatus | 'All'; importance: ImportanceLevel | 'All' }>({
     repairType: 'All',
     location: '',
     status: 'All',
+    importance: 'All',
   });
 
   useEffect(() => {
@@ -120,8 +125,17 @@ export default function HomePage() {
     if (filters.status !== 'All') {
       tempTickets = tempTickets.filter(t => t.status === filters.status);
     }
+    if (filters.importance !== 'All') {
+      tempTickets = tempTickets.filter(t => t.importance === filters.importance);
+    }
+
     tempTickets.sort((a, b) => {
+      const importanceOrder: Record<ImportanceLevel, number> = { 'Urgente': 1, 'Importante': 2, 'Poco Importante': 3 };
       const statusOrder: Record<TicketStatus, number> = { 'Abierta': 1, 'En Progreso': 2, 'Cerrada': 3 };
+
+      if (importanceOrder[a.importance] !== importanceOrder[b.importance]) {
+        return importanceOrder[a.importance] - importanceOrder[b.importance];
+      }
       if (statusOrder[a.status] !== statusOrder[b.status]) {
         return statusOrder[a.status] - statusOrder[b.status];
       }
@@ -152,7 +166,10 @@ export default function HomePage() {
                   Complete los detalles a continuación para informar un problema de mantenimiento.
                 </DialogDescription>
               </DialogHeader>
-              <TicketForm onSubmit={addTicket} submitButtonText="Crear Incidencia" />
+              <TicketForm 
+                onSubmit={addTicket} 
+                submitButtonText="Crear Incidencia" 
+                />
             </DialogContent>
           </Dialog>
         </div>
@@ -161,7 +178,6 @@ export default function HomePage() {
         
         <TicketList tickets={filteredTickets} onUpdateStatus={updateTicketStatus} onEditTicket={handleOpenEditForm} />
 
-        {/* Edit Ticket Dialog */}
         <Dialog open={isEditFormOpen} onOpenChange={(isOpen) => {
           setIsEditFormOpen(isOpen);
           if (!isOpen) {
@@ -182,6 +198,7 @@ export default function HomePage() {
                   description: editingTicket.description,
                   location: editingTicket.location,
                   repairType: editingTicket.repairType,
+                  importance: editingTicket.importance,
                 }}
                 submitButtonText="Guardar Cambios"
               />
