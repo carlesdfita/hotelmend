@@ -1,18 +1,48 @@
 // src/app/api/admin/generate-password/route.ts
 import { NextResponse } from 'next/server';
-import { accessPasswords, isSuperAdminAuthenticatedGlobally } from '../../sharedState';
+import { accessPasswords } from '../../sharedState';
 
-export async function POST() {
-  // En un escenario real, esta API estaría protegida,
-  // verificando una sesión/token de superadmin.
-  // Aquí, para simplificar, confiamos en que el frontend /admin solo la llama si el superadmin está logueado.
-  // O podríamos comprobar isSuperAdminAuthenticatedGlobally, pero tiene limitaciones.
+export async function POST(request: Request) {
+  // En un escenari real, aquesta API estaria protegida,
+  // verificant una sessió/token de superadmin.
+  try {
+    const body = await request.json().catch(() => ({})); // Gestiona cos buit o no JSON
+    const manualPassword = body?.password;
 
-  const newPassword = Math.random().toString(36).substring(2, 10);
-  accessPasswords.push(newPassword);
+    let newPassword;
+    let message;
 
-  return NextResponse.json(
-    { message: 'Nueva contraseña de acceso generada.', password: newPassword, success: true },
-    { status: 201 }
-  );
+    if (manualPassword && typeof manualPassword === 'string' && manualPassword.trim() !== '') {
+      const trimmedPassword = manualPassword.trim();
+      if (accessPasswords.includes(trimmedPassword)) {
+        return NextResponse.json(
+          { message: 'Aquesta contrasenya ja existeix.', success: false },
+          { status: 409 } // Conflicte
+        );
+      }
+      newPassword = trimmedPassword;
+      accessPasswords.push(newPassword);
+      message = 'Contrasenya manual afegida correctament.';
+    } else {
+      // Genera una contrasenya aleatòria si no es proporciona una contrasenya manual
+      newPassword = Math.random().toString(36).substring(2, 10);
+      // Assegurar que la contrasenya generada no existeixi ja (molt improbable, però segur)
+      while (accessPasswords.includes(newPassword)) {
+        newPassword = Math.random().toString(36).substring(2, 10);
+      }
+      accessPasswords.push(newPassword);
+      message = 'Nova contrasenya d\'accés generada.';
+    }
+
+    return NextResponse.json(
+      { message, password: newPassword, success: true },
+      { status: 201 }
+    );
+
+  } catch (error) {
+    return NextResponse.json(
+      { message: 'Error en processar la sol·licitud.', success: false },
+      { status: 400 }
+    );
+  }
 }
