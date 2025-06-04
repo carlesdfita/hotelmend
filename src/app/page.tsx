@@ -26,37 +26,37 @@ export default function HomePage() {
     const initialTickets: Ticket[] = [
       {
         id: '1',
-        description: 'Bathroom light in Room 305 flickers constantly. Needs replacement.',
-        location: 'Room 305',
-        repairType: 'Lights',
-        status: 'Open',
+        description: 'La luz del baño de la Habitación 305 parpadea constantemente. Necesita reemplazo.',
+        location: 'Habitación 305',
+        repairType: 'Iluminación',
+        status: 'Abierta',
         createdAt: new Date(new Date().setDate(new Date().getDate() - 2)), // 2 days ago
         updatedAt: new Date(new Date().setDate(new Date().getDate() - 2)),
       },
       {
         id: '2',
-        description: 'Sink in the main kitchen is clogged. Water drains very slowly.',
-        location: 'Main Kitchen',
-        repairType: 'Plumbing',
-        status: 'In Progress',
+        description: 'El lavabo de la cocina principal está atascado. El agua drena muy lentamente.',
+        location: 'Cocina Principal',
+        repairType: 'Fontanería',
+        status: 'En Progreso',
         createdAt: new Date(new Date().setDate(new Date().getDate() - 1)), // 1 day ago
         updatedAt: new Date(),
       },
       {
         id: '3',
-        description: 'Air conditioning in the gym is not cooling effectively. Seems to be blowing warm air.',
-        location: 'Gym',
-        repairType: 'HVAC',
-        status: 'Open',
+        description: 'El aire acondicionado del gimnasio no enfría eficazmente. Parece que expulsa aire caliente.',
+        location: 'Gimnasio',
+        repairType: 'Climatización',
+        status: 'Abierta',
         createdAt: new Date(),
         updatedAt: new Date(),
       },
        {
         id: '4',
-        description: 'Wooden panel on the reception desk is loose.',
-        location: 'Lobby Reception',
-        repairType: 'Carpentry',
-        status: 'Closed',
+        description: 'El panel de madera del mostrador de recepción está suelto.',
+        location: 'Recepción Vestíbulo',
+        repairType: 'Carpintería',
+        status: 'Cerrada',
         createdAt: new Date(new Date().setDate(new Date().getDate() - 5)),
         updatedAt: new Date(new Date().setDate(new Date().getDate() - 3)),
       },
@@ -70,7 +70,7 @@ export default function HomePage() {
       id: crypto.randomUUID(), 
       createdAt: new Date(),
       updatedAt: new Date(),
-      status: 'Open',
+      status: 'Abierta',
     };
     setTickets(prevTickets => [ticket, ...prevTickets]);
     setIsFormOpen(false);
@@ -103,7 +103,7 @@ export default function HomePage() {
     }
     // Sort tickets: Open, In Progress, then Closed. Within each status, sort by newest first.
     tempTickets.sort((a, b) => {
-      const statusOrder = { 'Open': 1, 'In Progress': 2, 'Closed': 3 };
+      const statusOrder: Record<TicketStatus, number> = { 'Abierta': 1, 'En Progreso': 2, 'Cerrada': 3 };
       if (statusOrder[a.status] !== statusOrder[b.status]) {
         return statusOrder[a.status] - statusOrder[b.status];
       }
@@ -119,19 +119,19 @@ export default function HomePage() {
       <main className="flex-grow container mx-auto p-4 md:p-6 lg:p-8">
         <div className="flex flex-col sm:flex-row justify-between items-center mb-8">
           <h1 className="text-3xl font-headline font-bold text-foreground mb-4 sm:mb-0">
-            Maintenance Tickets
+            Incidencias de Mantenimiento
           </h1>
           <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
             <DialogTrigger asChild>
               <Button size="lg">
-                <PlusCircle className="mr-2 h-5 w-5" /> Create New Ticket
+                <PlusCircle className="mr-2 h-5 w-5" /> Crear Nueva Incidencia
               </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[525px]">
               <DialogHeader>
-                <DialogTitle className="font-headline text-2xl">Create New Maintenance Ticket</DialogTitle>
+                <DialogTitle className="font-headline text-2xl">Crear Nueva Incidencia de Mantenimiento</DialogTitle>
                 <DialogDescription>
-                  Fill in the details below to report a maintenance issue.
+                  Complete los detalles a continuación para informar un problema de mantenimiento.
                 </DialogDescription>
               </DialogHeader>
               <TicketForm onSubmit={addTicket} />

@@ -1,8 +1,8 @@
-export type RepairType = "Electrical" | "Plumbing" | "Carpentry" | "Lights" | "HVAC" | "General";
-export const repairTypes: RepairType[] = ["Electrical", "Plumbing", "Carpentry", "Lights", "HVAC", "General"];
+export type RepairType = "Eléctrico" | "Fontanería" | "Carpintería" | "Iluminación" | "Climatización" | "General";
+export const repairTypes: RepairType[] = ["Eléctrico", "Fontanería", "Carpintería", "Iluminación", "Climatización", "General"];
 
-export type TicketStatus = "Open" | "In Progress" | "Closed";
-export const ticketStatuses: TicketStatus[] = ["Open", "In Progress", "Closed"];
+export type TicketStatus = "Abierta" | "En Progreso" | "Cerrada";
+export const ticketStatuses: TicketStatus[] = ["Abierta", "En Progreso", "Cerrada"];
 
 export interface SuggestedTicket {
   ticketId: string;

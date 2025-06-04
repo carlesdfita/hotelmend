@@ -12,6 +12,10 @@ import type { RepairType, TicketStatus } from "@/lib/types";
 import { repairTypes, ticketStatuses } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
+import { Card } from "@/components/ui/card"; // Assuming Card is imported from ui
+import { Label } from "@/components/ui/label"; // Assuming Label is imported from ui
+import * as React from 'react';
+
 
 interface FilterControlsProps {
   filters: {
@@ -36,26 +40,26 @@ export default function FilterControls({ filters, onFilterChange }: FilterContro
     <Card className="mb-6 p-4">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
         <div>
-          <Label htmlFor="filter-location">Location</Label>
+          <Label htmlFor="filter-location">Ubicación</Label>
           <Input
             id="filter-location"
-            placeholder="Search by area/room..."
+            placeholder="Buscar por área/habitación..."
             value={filters.location}
             onChange={(e) => onFilterChange({ ...filters, location: e.target.value })}
             className="mt-1"
           />
         </div>
         <div>
-          <Label htmlFor="filter-repair-type">Repair Type</Label>
+          <Label htmlFor="filter-repair-type">Tipo de Reparación</Label>
           <Select
             value={filters.repairType}
             onValueChange={(value: RepairType | "All") => onFilterChange({ ...filters, repairType: value })}
           >
             <SelectTrigger id="filter-repair-type" className="mt-1">
-              <SelectValue placeholder="Filter by repair type" />
+              <SelectValue placeholder="Filtrar por tipo de reparación" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="All">All Repair Types</SelectItem>
+              <SelectItem value="All">Todos los Tipos de Reparación</SelectItem>
               {repairTypes.map((type) => (
                 <SelectItem key={type} value={type}>
                   {type}
@@ -65,16 +69,16 @@ export default function FilterControls({ filters, onFilterChange }: FilterContro
           </Select>
         </div>
         <div>
-          <Label htmlFor="filter-status">Status</Label>
+          <Label htmlFor="filter-status">Estado</Label>
           <Select
             value={filters.status}
             onValueChange={(value: TicketStatus | "All") => onFilterChange({ ...filters, status: value })}
           >
             <SelectTrigger id="filter-status" className="mt-1">
-              <SelectValue placeholder="Filter by status" />
+              <SelectValue placeholder="Filtrar por estado" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="All">All Statuses</SelectItem>
+              <SelectItem value="All">Todos los Estados</SelectItem>
               {ticketStatuses.map((status) => (
                 <SelectItem key={status} value={status}>
                   {status}
@@ -84,37 +88,9 @@ export default function FilterControls({ filters, onFilterChange }: FilterContro
           </Select>
         </div>
         <Button onClick={handleResetFilters} variant="outline" className="w-full lg:w-auto">
-          <X className="mr-2 h-4 w-4" /> Reset Filters
+          <X className="mr-2 h-4 w-4" /> Restablecer Filtros
         </Button>
       </div>
     </Card>
   );
 }
-
-// Minimal Label and Card components to avoid full import if not already there
-// Usually these would be imported from "@/components/ui/label" and "@/components/ui/card"
-const Label = React.forwardRef<
-  React.ElementRef<"label">,
-  React.ComponentPropsWithoutRef<"label">
->(({ className, ...props }, ref) => (
-  <label
-    ref={ref}
-    className={`block text-sm font-medium text-foreground ${className || ''}`}
-    {...props}
-  />
-));
-Label.displayName = "Label";
-
-const Card = React.forwardRef<
-  HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement>
->(({ className, ...props }, ref) => (
-  <div
-    ref={ref}
-    className={`rounded-lg border bg-card text-card-foreground shadow-sm ${className || ''}`}
-    {...props}
-  />
-));
-Card.displayName = "Card";
-
-import * as React from 'react';

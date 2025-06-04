@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import type { Ticket, TicketStatus } from "@/lib/types";
+import type { Ticket, TicketStatus, RepairType } from "@/lib/types";
 import {
   Zap,
   Wrench,
@@ -37,19 +37,19 @@ interface TicketCardProps {
   onUpdateStatus: (ticketId: string, newStatus: TicketStatus) => void;
 }
 
-const repairTypeIcons: Record<Ticket["repairType"], React.ElementType> = {
-  Electrical: Zap,
-  Plumbing: Wrench,
-  Carpentry: Hammer,
-  Lights: Lightbulb,
-  HVAC: Wind,
-  General: ClipboardList,
+const repairTypeIcons: Record<RepairType, React.ElementType> = {
+  "Eléctrico": Zap,
+  "Fontanería": Wrench,
+  "Carpintería": Hammer,
+  "Iluminación": Lightbulb,
+  "Climatización": Wind,
+  "General": ClipboardList,
 };
 
 const statusInfo: Record<TicketStatus, { icon: React.ElementType; colorClass: string; variant: "default" | "secondary" | "destructive" | "outline" | null | undefined }> = {
-  Open: { icon: CircleAlert, colorClass: "bg-red-500", variant: "destructive" },
-  "In Progress": { icon: CircleDotDashed, colorClass: "bg-yellow-500", variant: "secondary" },
-  Closed: { icon: CheckCircle2, colorClass: "bg-green-500", variant: "default" },
+  "Abierta": { icon: CircleAlert, colorClass: "bg-red-500", variant: "destructive" },
+  "En Progreso": { icon: CircleDotDashed, colorClass: "bg-yellow-500", variant: "secondary" },
+  "Cerrada": { icon: CheckCircle2, colorClass: "bg-green-500", variant: "default" },
 };
 
 
@@ -68,10 +68,10 @@ export default function TicketCard({ ticket, onUpdateStatus }: TicketCardProps) 
           <div>
             <CardTitle className="text-xl font-headline flex items-center">
               <RepairIcon className="mr-2 h-6 w-6 text-primary" />
-              {ticket.repairType} Issue
+              Incidencia de {ticket.repairType}
             </CardTitle>
             <CardDescription className="flex items-center mt-1">
-              <MapPin className="mr-1 h-4 w-4 text-muted-foreground" /> Room/Area: {ticket.location}
+              <MapPin className="mr-1 h-4 w-4 text-muted-foreground" /> Habitación/Área: {ticket.location}
             </CardDescription>
           </div>
           <DropdownMenu>
@@ -81,19 +81,19 @@ export default function TicketCard({ ticket, onUpdateStatus }: TicketCardProps) 
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              {ticket.status !== "In Progress" && ticket.status !== "Closed" && (
-                <DropdownMenuItem onClick={() => handleStatusChange("In Progress")}>
-                  Mark In Progress
+              {ticket.status !== "En Progreso" && ticket.status !== "Cerrada" && (
+                <DropdownMenuItem onClick={() => handleStatusChange("En Progreso")}>
+                  Marcar En Progreso
                 </DropdownMenuItem>
               )}
-              {ticket.status !== "Closed" && (
-                 <DropdownMenuItem onClick={() => handleStatusChange("Closed")}>
-                   Mark Complete
+              {ticket.status !== "Cerrada" && (
+                 <DropdownMenuItem onClick={() => handleStatusChange("Cerrada")}>
+                   Marcar Completa
                  </DropdownMenuItem>
               )}
-               {ticket.status === "Closed" && ticket.status !== "Open" && (
-                 <DropdownMenuItem onClick={() => handleStatusChange("Open")}>
-                   Reopen Ticket
+               {ticket.status === "Cerrada" && ticket.status !== "Abierta" && (
+                 <DropdownMenuItem onClick={() => handleStatusChange("Abierta")}>
+                   Reabrir Incidencia
                  </DropdownMenuItem>
               )}
             </DropdownMenuContent>

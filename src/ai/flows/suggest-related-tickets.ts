@@ -12,16 +12,16 @@ import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
 const SuggestRelatedTicketsInputSchema = z.object({
-  description: z.string().describe('The description of the maintenance ticket.'),
+  description: z.string().describe('La descripción de la incidencia de mantenimiento.'),
 });
 export type SuggestRelatedTicketsInput = z.infer<typeof SuggestRelatedTicketsInputSchema>;
 
 const SuggestRelatedTicketsOutputSchema = z.array(
   z.object({
-    ticketId: z.string().describe('The ID of the related ticket.'),
-    description: z.string().describe('The description of the related ticket.'),
+    ticketId: z.string().describe('El ID de la incidencia relacionada.'),
+    description: z.string().describe('La descripción de la incidencia relacionada.'),
   })
-).describe('A list of related tickets.');
+).describe('Una lista de incidencias relacionadas.');
 export type SuggestRelatedTicketsOutput = z.infer<typeof SuggestRelatedTicketsOutputSchema>;
 
 export async function suggestRelatedTickets(input: SuggestRelatedTicketsInput): Promise<SuggestRelatedTicketsOutput> {
@@ -30,14 +30,14 @@ export async function suggestRelatedTickets(input: SuggestRelatedTicketsInput): 
 
 const searchTickets = ai.defineTool({
   name: 'searchTickets',
-  description: 'Search for existing maintenance tickets based on keywords.',
+  description: 'Buscar incidencias de mantenimiento existentes basadas en palabras clave.',
   inputSchema: z.object({
-    keywords: z.string().describe('Keywords to search for in existing tickets.'),
+    keywords: z.string().describe('Palabras clave para buscar en incidencias existentes.'),
   }),
   outputSchema: z.array(
     z.object({
-      ticketId: z.string().describe('The ID of the found ticket.'),
-      description: z.string().describe('The description of the found ticket.'),
+      ticketId: z.string().describe('El ID de la incidencia encontrada.'),
+      description: z.string().describe('La descripción de la incidencia encontrada.'),
     })
   ),
 },
@@ -46,8 +46,8 @@ async (input) => {
   // For now, return some dummy data.
   await new Promise(resolve => setTimeout(resolve, 500));
   return [
-    {ticketId: '123', description: 'Example related ticket 1.'},
-    {ticketId: '456', description: 'Example related ticket 2.'},
+    {ticketId: '123', description: 'Ejemplo de incidencia relacionada 1.'},
+    {ticketId: '456', description: 'Ejemplo de incidencia relacionada 2.'},
   ];
 });
 
@@ -56,7 +56,7 @@ const prompt = ai.definePrompt({
   input: {schema: SuggestRelatedTicketsInputSchema},
   output: {schema: SuggestRelatedTicketsOutputSchema},
   tools: [searchTickets],
-  prompt: `Based on the following maintenance ticket description, suggest related tickets by using the searchTickets tool to find relevant past tickets.\n\nTicket Description: {{{description}}}`,
+  prompt: `Basándose en la siguiente descripción de la incidencia de mantenimiento, sugiera incidencias relacionadas utilizando la herramienta searchTickets para encontrar incidencias anteriores relevantes.\n\nDescripción de la Incidencia: {{{description}}}`,
 });
 
 const suggestRelatedTicketsFlow = ai.defineFlow(

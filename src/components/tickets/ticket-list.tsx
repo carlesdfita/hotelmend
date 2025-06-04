@@ -12,8 +12,8 @@ export default function TicketList({ tickets, onUpdateStatus }: TicketListProps)
   if (tickets.length === 0) {
     return (
       <div className="text-center py-10">
-        <p className="text-xl text-muted-foreground">No maintenance tickets found.</p>
-        <p className="text-sm text-muted-foreground">Try adjusting your filters or create a new ticket.</p>
+        <p className="text-xl text-muted-foreground">No se encontraron incidencias de mantenimiento.</p>
+        <p className="text-sm text-muted-foreground">Intente ajustar sus filtros o cree una nueva incidencia.</p>
       </div>
     );
   }

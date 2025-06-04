@@ -29,9 +29,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Loader2 } from "lucide-react";
 
 const ticketFormSchema = z.object({
-  description: z.string().min(10, { message: "Description must be at least 10 characters." }),
-  location: z.string().min(1, { message: "Location is required." }),
-  repairType: z.enum(repairTypes, { message: "Invalid repair type." }),
+  description: z.string().min(10, { message: "La descripción debe tener al menos 10 caracteres." }),
+  location: z.string().min(1, { message: "La ubicación es obligatoria." }),
+  repairType: z.enum(repairTypes, { message: "Tipo de reparación no válido." }),
 });
 
 type TicketFormValues = z.infer<typeof ticketFormSchema>;
@@ -103,10 +103,10 @@ export default function TicketForm({ onSubmit, initialData }: TicketFormProps) {
           name="description"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Description</FormLabel>
+              <FormLabel>Descripción</FormLabel>
               <FormControl>
                 <Textarea
-                  placeholder="Describe the issue in detail (e.g., 'Faucet in room 203 is leaking')"
+                  placeholder="Describa el problema en detalle (ej: 'El grifo de la habitación 203 gotea')"
                   {...field}
                   onChange={handleDescriptionChange} 
                   rows={4}
@@ -120,20 +120,20 @@ export default function TicketForm({ onSubmit, initialData }: TicketFormProps) {
         {isLoadingSuggestions && (
           <div className="flex items-center text-sm text-muted-foreground">
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            Loading suggestions...
+            Cargando sugerencias...
           </div>
         )}
 
         {suggestedTickets.length > 0 && !isLoadingSuggestions && (
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">Suggested Related Tickets</CardTitle>
-              <CardDescription>These past tickets might be related to your issue:</CardDescription>
+              <CardTitle className="text-lg">Incidencias Anteriores Sugeridas</CardTitle>
+              <CardDescription>Estas incidencias anteriores podrían estar relacionadas con su problema:</CardDescription>
             </CardHeader>
             <CardContent className="space-y-2 max-h-48 overflow-y-auto">
               {suggestedTickets.map((ticket) => (
                 <div key={ticket.ticketId} className="text-sm p-2 border rounded-md bg-muted/50">
-                  <p className="font-medium">Ticket ID: {ticket.ticketId}</p>
+                  <p className="font-medium">ID de Incidencia: {ticket.ticketId}</p>
                   <p className="text-muted-foreground">{ticket.description}</p>
                 </div>
               ))}
@@ -146,9 +146,9 @@ export default function TicketForm({ onSubmit, initialData }: TicketFormProps) {
           name="location"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Area / Room Number</FormLabel>
+              <FormLabel>Área / Número de Habitación</FormLabel>
               <FormControl>
-                <Input placeholder="e.g., Room 101, Lobby, Kitchen" {...field} />
+                <Input placeholder="ej: Habitación 101, Vestíbulo, Cocina" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -160,11 +160,11 @@ export default function TicketForm({ onSubmit, initialData }: TicketFormProps) {
           name="repairType"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Repair Type</FormLabel>
+              <FormLabel>Tipo de Reparación</FormLabel>
               <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <FormControl>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select repair type" />
+                    <SelectValue placeholder="Seleccionar tipo de reparación" />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
@@ -179,7 +179,7 @@ export default function TicketForm({ onSubmit, initialData }: TicketFormProps) {
             </FormItem>
           )}
         />
-        <Button type="submit" className="w-full">Create Ticket</Button>
+        <Button type="submit" className="w-full">Crear Incidencia</Button>
       </form>
     </Form>
   );
