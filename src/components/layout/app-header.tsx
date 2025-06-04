@@ -1,9 +1,8 @@
 
 "use client";
 
-import { Hotel, Settings, LogOut } from 'lucide-react';
+import { Hotel, Settings } from 'lucide-react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,23 +12,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/hooks/use-toast";
 
 export default function AppHeader() {
-  const router = useRouter();
-  const { toast } = useToast();
-
-  const handleLogout = () => {
-    // Eliminar ambos flags para asegurar un logout completo
-    localStorage.removeItem('isAuthenticated');
-    localStorage.removeItem('isSuperAdminAuthenticated'); 
-    toast({
-      title: "Sessió Tancada",
-      description: "Has tancat la sessió correctament.",
-    });
-    router.replace('/login');
-  };
-
   return (
     <header className="bg-card border-b shadow-sm">
       <div className="container mx-auto px-4 md:px-6 lg:px-8 h-16 flex items-center justify-between">
@@ -57,10 +41,6 @@ export default function AppHeader() {
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-          <Button variant="outline" size="icon" onClick={handleLogout} title="Tancar Sessió">
-            <LogOut className="h-5 w-5" />
-            <span className="sr-only">Tancar Sessió</span>
-          </Button>
         </div>
       </div>
     </header>

@@ -5,32 +5,13 @@ import AppHeader from '@/components/layout/app-header';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
-import { useRouter } from 'next/navigation';
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 
 export default function SettingsLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const router = useRouter();
-  const [isClient, setIsClient] = useState(false);
-
-  useEffect(() => {
-    setIsClient(true);
-    if (typeof window !== 'undefined' && localStorage.getItem('isAuthenticated') !== 'true') {
-      router.replace('/login');
-    }
-  }, [router]);
-
-  if (!isClient || (typeof window !== 'undefined' && localStorage.getItem('isAuthenticated') !== 'true')) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-background">
-        <p>Redirigint a la pàgina d'accés...</p>
-      </div>
-    );
-  }
-
   return (
     <div className="flex flex-col min-h-screen bg-background">
       <AppHeader />

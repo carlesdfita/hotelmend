@@ -1,8 +1,7 @@
 
 "use client";
 
-import React, { useState, useEffect, useMemo } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useState, useEffect } from 'react';
 import AppHeader from '@/components/layout/app-header';
 import TicketForm from '@/components/tickets/ticket-form';
 import TicketList from '@/components/tickets/ticket-list';
@@ -20,16 +19,6 @@ import type { Ticket, RepairType, TicketStatus, ImportanceLevel } from '@/lib/ty
 import { PlusCircle } from 'lucide-react';
 
 export default function HomePage() {
-  const router = useRouter();
-  const [isClient, setIsClient] = useState(false);
-
-  useEffect(() => {
-    setIsClient(true);
-    if (typeof window !== 'undefined' && localStorage.getItem('isAuthenticated') !== 'true') {
-      router.replace('/login');
-    }
-  }, [router]);
-
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [filteredTickets, setFilteredTickets] = useState<Ticket[]>([]);
   const [isCreateFormOpen, setIsCreateFormOpen] = useState(false);
@@ -37,59 +26,59 @@ export default function HomePage() {
   const [editingTicket, setEditingTicket] = useState<Ticket | null>(null);
 
   useEffect(() => {
-    if (typeof window !== 'undefined' && localStorage.getItem('isAuthenticated') === 'true') {
-      const initialTickets: Ticket[] = [
-        {
-          id: '1',
-          description: 'La llum del bany de l\'Habitació 305 parpelleja constantment. Necessita reemplaçament.',
-          location: 'Habitació 305',
-          repairType: 'Il·luminació',
-          status: 'Oberta',
-          importance: 'Important',
-          createdAt: new Date(new Date().setDate(new Date().getDate() - 2)), 
-          updatedAt: new Date(new Date().setDate(new Date().getDate() - 2)),
-        },
-        {
-          id: '2',
-          description: 'El lavabo de la cuina principal està embussat. L\'aigua drena molt lentament.',
-          location: 'Cuina Principal',
-          repairType: 'Lampisteria',
-          status: 'En Progrés',
-          importance: 'Urgent',
-          createdAt: new Date(new Date().setDate(new Date().getDate() - 1)), 
-          updatedAt: new Date(),
-        },
-        {
-          id: '3',
-          description: 'L\'aire condicionat del gimnàs no refreda eficaçment. Sembla que expulsa aire calent.',
-          location: 'Gimnàs',
-          repairType: 'Climatització',
-          status: 'Oberta',
-          importance: 'Important',
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
-         {
-          id: '4',
-          description: 'El panell de fusta del taulell de recepció està solt.',
-          location: 'Recepció Vestíbul',
-          repairType: 'Fusteria',
-          status: 'Tancada',
-          importance: 'Poc Important',
-          createdAt: new Date(new Date().setDate(new Date().getDate() - 5)),
-          updatedAt: new Date(new Date().setDate(new Date().getDate() - 3)),
-        },
-      ];
-      // Simulate loading from localStorage for locations and repair types for demo consistency
-      if (!localStorage.getItem('locations')) {
-          localStorage.setItem('locations', JSON.stringify(["Recepció Vestíbul", "Cuina Principal", "Gimnàs", "Piscina", "Habitació 305"]));
-      }
-      if (!localStorage.getItem('repairTypes')) {
-          localStorage.setItem('repairTypes', JSON.stringify(["Elèctric", "Lampisteria", "Fusteria", "Il·luminació", "Climatització", "General"]));
-      }
-      setTickets(initialTickets);
+    // Initialize with dummy data and ensure localStorage for settings is populated
+    const initialTickets: Ticket[] = [
+      {
+        id: '1',
+        description: 'La llum del bany de l\'Habitació 305 parpelleja constantment. Necessita reemplaçament.',
+        location: 'Habitació 305',
+        repairType: 'Il·luminació',
+        status: 'Oberta',
+        importance: 'Important',
+        createdAt: new Date(new Date().setDate(new Date().getDate() - 2)),
+        updatedAt: new Date(new Date().setDate(new Date().getDate() - 2)),
+      },
+      {
+        id: '2',
+        description: 'El lavabo de la cuina principal està embussat. L\'aigua drena molt lentament.',
+        location: 'Cuina Principal',
+        repairType: 'Lampisteria',
+        status: 'En Progrés',
+        importance: 'Urgent',
+        createdAt: new Date(new Date().setDate(new Date().getDate() - 1)),
+        updatedAt: new Date(),
+      },
+      {
+        id: '3',
+        description: 'L\'aire condicionat del gimnàs no refreda eficaçment. Sembla que expulsa aire calent.',
+        location: 'Gimnàs',
+        repairType: 'Climatització',
+        status: 'Oberta',
+        importance: 'Important',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+       {
+        id: '4',
+        description: 'El panell de fusta del taulell de recepció està solt.',
+        location: 'Recepció Vestíbul',
+        repairType: 'Fusteria',
+        status: 'Tancada',
+        importance: 'Poc Important',
+        createdAt: new Date(new Date().setDate(new Date().getDate() - 5)),
+        updatedAt: new Date(new Date().setDate(new Date().getDate() - 3)),
+      },
+    ];
+    if (typeof window !== 'undefined') {
+        if (!localStorage.getItem('locations')) {
+            localStorage.setItem('locations', JSON.stringify(["Recepció Vestíbul", "Cuina Principal", "Gimnàs", "Piscina", "Habitació 305"]));
+        }
+        if (!localStorage.getItem('repairTypes')) {
+            localStorage.setItem('repairTypes', JSON.stringify(["Elèctric", "Lampisteria", "Fusteria", "Il·luminació", "Climatització", "General"]));
+        }
     }
-  }, [isClient]); // Re-run when isClient changes to ensure localStorage is available
+    setTickets(initialTickets);
+  }, []);
   
   const addTicket = (newTicketData: Omit<Ticket, 'id' | 'createdAt' | 'updatedAt' | 'status'>) => {
     const ticket: Ticket = {
@@ -135,9 +124,6 @@ export default function HomePage() {
   });
 
   useEffect(() => {
-    if (typeof window !== 'undefined' && localStorage.getItem('isAuthenticated') !== 'true') {
-      return; // No filtrar si no está autenticado
-    }
     let tempTickets = [...tickets];
     
     if (filters.repairType.length > 0) {
@@ -149,7 +135,10 @@ export default function HomePage() {
     if (filters.status.length > 0) {
       tempTickets = tempTickets.filter(t => filters.status.includes(t.status));
     } else {
-      tempTickets = []; // Si no hay estados seleccionados, no mostrar ninguna incidencia
+      // If no status filters are selected, show no tickets (as per previous logic)
+      // If you want to show all tickets when no status is selected, change this to:
+      // tempTickets = tempTickets; // or simply remove the else block if that's the desired default
+      tempTickets = []; 
     }
     if (filters.importance.length > 0) {
       tempTickets = tempTickets.filter(t => filters.importance.includes(t.importance));
@@ -168,16 +157,7 @@ export default function HomePage() {
       return b.createdAt.getTime() - a.createdAt.getTime();
     });
     setFilteredTickets(tempTickets);
-  }, [tickets, filters, isClient]);
-
-
-  if (!isClient || (typeof window !== 'undefined' && localStorage.getItem('isAuthenticated') !== 'true')) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-background">
-        <p>Redirigint a la pàgina d'accés...</p>
-      </div>
-    );
-  }
+  }, [tickets, filters]);
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
