@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect } from 'react';
@@ -55,14 +56,6 @@ export default function LocationsPage() {
   };
 
   const handleDeleteLocation = (locationToDelete: string) => {
-     if (initialLocations.map(loc => loc.toLowerCase()).includes(locationToDelete.toLowerCase())) {
-      toast({
-        title: "Acción no permitida",
-        description: `La ubicación "${locationToDelete}" es una ubicación base y no se puede eliminar.`,
-        variant: "destructive",
-      });
-      return;
-    }
     const updatedLocations = locations.filter(loc => loc !== locationToDelete);
     setLocations(updatedLocations);
     localStorage.setItem('locations', JSON.stringify(updatedLocations));
@@ -104,11 +97,9 @@ export default function LocationsPage() {
               {locations.map((loc) => (
                 <li key={loc} className="flex items-center justify-between p-3 bg-muted/50 rounded-md">
                   <span className="font-medium">{loc}</span>
-                   {!initialLocations.map(l => l.toLowerCase()).includes(loc.toLowerCase()) && (
-                    <Button variant="ghost" size="sm" onClick={() => handleDeleteLocation(loc)} aria-label={`Eliminar ${loc}`}>
-                      <Trash2 className="h-4 w-4 text-destructive" />
-                    </Button>
-                  )}
+                  <Button variant="ghost" size="sm" onClick={() => handleDeleteLocation(loc)} aria-label={`Eliminar ${loc}`}>
+                    <Trash2 className="h-4 w-4 text-destructive" />
+                  </Button>
                 </li>
               ))}
             </ul>
