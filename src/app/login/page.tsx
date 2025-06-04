@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect } from 'react';
@@ -7,25 +6,28 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Hotel, KeyRound } from 'lucide-react'; // KeyRound para indicar algo relacionado con claves/admin
+import { Hotel, KeyRound, AlertTriangle } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 
-const REGULAR_USER_PASSWORD = "admin123"; // Contrasenya d'usuari regular predefinida
-const SUPERADMIN_REDIRECT_PASSWORD = "superadmin123"; // Contrasenya que redirigeix a /admin
+const REGULAR_USER_PASSWORD = "admin123"; // Contrasenya d'usuari regular predefinida (backup)
+const SUPERADMIN_REDIRECT_PASSWORD = process.env.NEXT_PUBLIC_SUPERADMIN_REDIRECT_PASSWORD;
 
 export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [showPasswordWarning, setShowPasswordWarning] = useState(false);
   const router = useRouter();
   const { toast } = useToast();
 
   useEffect(() => {
-    // Si l'usuari ja està autenticat (com a regular o superadmin), redirigir-lo
+    if (!SUPERADMIN_REDIRECT_PASSWORD || SUPERADMIN_REDIRECT_PASSWORD === "superadmin123_default_local" || SUPERADMIN_REDIRECT_PASSWORD === "superadmin123_change_me") {
+      setShowPasswordWarning(true);
+    }
+
     if (localStorage.getItem('isAuthenticated') === 'true') {
       router.replace('/');
     } else if (localStorage.getItem('isSuperAdminAuthenticated') === 'true') {
-      // No redirigimos desde aquí a /admin, el acceso a /admin se protege en su propia página.
-      // Esto previene bucles si /admin redirige aquí y no hay flag de superadmin.
+      // No redirigim a /admin des d'aquí, ja que /admin té la seva pròpia protecció
     }
   }, [router]);
 
@@ -33,13 +35,19 @@ export default function LoginPage() {
     event.preventDefault();
     setIsLoading(true);
 
+    if (!SUPERADMIN_REDIRECT_PASSWORD) {
+      toast({
+        title: "Error de Configuració",
+        description: "La contrasenya de superadministrador no està configurada per a la redirecció.",
+        variant: "destructive",
+      });
+      setIsLoading(false);
+      return;
+    }
+
     if (password === SUPERADMIN_REDIRECT_PASSWORD) {
-      // Establecer un flag para que la página /admin sepa que el login fue exitoso
-      // La página /admin verificará esta contraseña de nuevo o usará su propio estado
-      // Por simplicidad, la página /admin tendrá su propio campo de contraseña.
-      // Esta ruta solo redirige.
-      localStorage.setItem('isSuperAdminAuthenticated', 'true'); // Este flag será usado por /admin
-      localStorage.removeItem('isAuthenticated'); // Asegurar que no sea usuario normal
+      localStorage.setItem('isSuperAdminAuthenticated', 'true');
+      localStorage.removeItem('isAuthenticated');
       toast({
         title: "Redirecció a Superadmin",
         description: "Seràs redirigit al panell de superadministrador.",
@@ -49,11 +57,12 @@ export default function LoginPage() {
       return;
     }
 
+    // Comprovació de la contrasenya regular predefinida (backup)
     if (password === REGULAR_USER_PASSWORD) {
       localStorage.setItem('isAuthenticated', 'true');
       localStorage.removeItem('isSuperAdminAuthenticated');
       toast({
-        title: "Sessió Iniciada",
+        title: "Sessió Iniciada (Contrasenya Predeterminada)",
         description: "Benvingut/da de nou!",
       });
       router.replace('/');
@@ -61,7 +70,6 @@ export default function LoginPage() {
       return;
     }
 
-    // Si no es superadmin ni el usuario regular, intentar validar como contraseña generada
     try {
       const response = await fetch('/api/check-user-password', {
         method: 'POST',
@@ -97,6 +105,28 @@ export default function LoginPage() {
 
     setIsLoading(false);
   };
+
+  if (showPasswordWarning) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen bg-background p-4">
+        <Card className="w-full max-w-md shadow-xl">
+          <CardHeader className="text-center">
+            <AlertTriangle className="h-12 w-12 text-destructive mx-auto mb-4" />
+            <CardTitle className="text-2xl font-headline text-destructive">Error de Configuració de Seguretat</CardTitle>
+          </CardHeader>
+          <CardContent>
+             <p className="text-center text-destructive-foreground bg-destructive p-3 rounded-md">
+              La contrasenya de superadministrador per defecte encara està activa o no està configurada correctament a les variables d'entorn.
+            </p>
+            <p className="mt-4 text-sm text-muted-foreground">
+              Per favor, estableix les variables d'entorn `NEXT_PUBLIC_SUPERADMIN_LOGIN_PASSWORD`, `NEXT_PUBLIC_SUPERADMIN_REDIRECT_PASSWORD`, i `SUPERADMIN_API_PASSWORD` amb valors segurs abans d'utilitzar el panell d'administració en producció. Consulta el fitxer `.env` per a més detalls.
+            </p>
+             <Button onClick={() => setShowPasswordWarning(false)} className="w-full mt-6">Entès, anar a Login</Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-background p-4">

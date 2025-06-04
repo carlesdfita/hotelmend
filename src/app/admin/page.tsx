@@ -8,9 +8,9 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { useRouter } from 'next/navigation';
 import { useToast } from "@/hooks/use-toast";
-import { KeyRound, ListChecks, LogOut, ShieldAlert, PlusCircle, Trash2 } from 'lucide-react';
+import { KeyRound, ListChecks, LogOut, ShieldAlert, PlusCircle, Trash2, AlertTriangle } from 'lucide-react';
 
-const SUPERADMIN_LOGIN_PASSWORD = "superadmin123"; 
+const SUPERADMIN_LOGIN_PASSWORD = process.env.NEXT_PUBLIC_SUPERADMIN_LOGIN_PASSWORD;
 
 export default function AdminPage() {
   const [passwordInput, setPasswordInput] = useState('');
@@ -18,10 +18,14 @@ export default function AdminPage() {
   const [generatedPasswords, setGeneratedPasswords] = useState<string[]>([]);
   const [lastGeneratedPassword, setLastGeneratedPassword] = useState<string | null>(null);
   const [manualPasswordInput, setManualPasswordInput] = useState<string>('');
+  const [showPasswordWarning, setShowPasswordWarning] = useState(false);
   const router = useRouter();
   const { toast } = useToast();
 
   useEffect(() => {
+    if (!SUPERADMIN_LOGIN_PASSWORD || SUPERADMIN_LOGIN_PASSWORD === "superadmin123_default_local" || SUPERADMIN_LOGIN_PASSWORD === "superadmin123_change_me") {
+      setShowPasswordWarning(true);
+    }
     if (localStorage.getItem('isSuperAdminAuthenticated') === 'true') {
       setIsLoggedIn(true);
       fetchGeneratedPasswords();
@@ -29,15 +33,19 @@ export default function AdminPage() {
   }, []);
 
   const handleSuperAdminLogin = () => {
+    if (!SUPERADMIN_LOGIN_PASSWORD) {
+       toast({ title: "Error de Configuració", description: "La contrasenya de superadministrador no està configurada.", variant: "destructive" });
+       return;
+    }
     if (passwordInput === SUPERADMIN_LOGIN_PASSWORD) {
       localStorage.setItem('isSuperAdminAuthenticated', 'true');
       setIsLoggedIn(true);
       fetchGeneratedPasswords();
       toast({ title: "Accés de Superadmin Concedit", description: "Ara pots gestionar les contrasenyes d'accés." });
-      setPasswordInput(''); 
+      setPasswordInput('');
     } else {
       toast({ title: "Error d'Accés", description: "Contrasenya de Superadmin incorrecta.", variant: "destructive" });
-      setPasswordInput(''); 
+      setPasswordInput('');
     }
   };
 
@@ -48,7 +56,7 @@ export default function AdminPage() {
     setLastGeneratedPassword(null);
     setManualPasswordInput('');
     toast({ title: "Sessió de Superadmin Tancada" });
-    router.push('/login'); 
+    router.push('/login');
   };
 
   const fetchGeneratedPasswords = async () => {
@@ -71,16 +79,16 @@ export default function AdminPage() {
     if (localStorage.getItem('isSuperAdminAuthenticated') !== 'true') return;
     setLastGeneratedPassword(null);
     try {
-      const response = await fetch('/api/admin/generate-password', { 
+      const response = await fetch('/api/admin/generate-password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({}), // Cos buit per a generació aleatòria
+        body: JSON.stringify({}), 
       });
       if (response.ok) {
         const data = await response.json();
         setLastGeneratedPassword(data.password);
         toast({ title: "Contrasenya Generada", description: `Nova contrasenya: ${data.password}`});
-        fetchGeneratedPasswords(); 
+        fetchGeneratedPasswords();
       } else {
         const errorData = await response.json();
         toast({ title: "Error al Generar Contrasenya", description: errorData.message || "No s'ha pogut generar la contrasenya.", variant: "destructive" });
@@ -96,7 +104,7 @@ export default function AdminPage() {
       toast({ title: "Error", description: "La contrasenya manual no pot estar buida.", variant: "destructive" });
       return;
     }
-    setLastGeneratedPassword(null); 
+    setLastGeneratedPassword(null);
     try {
       const response = await fetch('/api/admin/generate-password', {
         method: 'POST',
@@ -106,8 +114,8 @@ export default function AdminPage() {
       const data = await response.json();
       if (response.ok) {
         toast({ title: "Contrasenya Afegida", description: data.message });
-        setManualPasswordInput(''); 
-        fetchGeneratedPasswords(); 
+        setManualPasswordInput('');
+        fetchGeneratedPasswords();
       } else {
          toast({ title: "Error a l'Afegir Contrasenya", description: data.message || "No s'ha pogut afegir la contrasenya.", variant: "destructive" });
       }
@@ -127,7 +135,7 @@ export default function AdminPage() {
       const data = await response.json();
       if (response.ok) {
         toast({ title: "Contrasenya Eliminada", description: `Contrasenya "${passwordToDelete}" eliminada.`});
-        fetchGeneratedPasswords(); 
+        fetchGeneratedPasswords();
       } else {
         toast({ title: "Error a l'Eliminar", description: data.message || "No s'ha pogut eliminar la contrasenya.", variant: "destructive" });
       }
@@ -135,6 +143,29 @@ export default function AdminPage() {
       toast({ title: "Error de Xarxa", description: "No s'ha pogut connectar per eliminar la contrasenya.", variant: "destructive" });
     }
   };
+  
+  if (showPasswordWarning && !isLoggedIn) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen bg-background p-4">
+        <Card className="w-full max-w-md shadow-xl">
+          <CardHeader className="text-center">
+            <AlertTriangle className="h-12 w-12 text-destructive mx-auto mb-4" />
+            <CardTitle className="text-2xl font-headline text-destructive">Error de Configuració de Seguretat</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-center text-destructive-foreground bg-destructive p-3 rounded-md">
+              La contrasenya de superadministrador per defecte encara està activa o no està configurada correctament a les variables d'entorn.
+            </p>
+            <p className="mt-4 text-sm text-muted-foreground">
+              Per favor, estableix les variables d'entorn `NEXT_PUBLIC_SUPERADMIN_LOGIN_PASSWORD`, `NEXT_PUBLIC_SUPERADMIN_REDIRECT_PASSWORD`, i `SUPERADMIN_API_PASSWORD` amb valors segurs abans d'utilitzar el panell d'administració en producció. Consulta el fitxer `.env` per a més detalls.
+            </p>
+            <Button onClick={() => router.push('/')} className="w-full mt-6">Tornar a l'inici</Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
 
   if (!isLoggedIn) {
     return (
@@ -168,6 +199,18 @@ export default function AdminPage() {
 
   return (
     <div className="container mx-auto p-4 md:p-6 lg:p-8">
+       {showPasswordWarning && (
+         <Card className="mb-6 border-destructive bg-destructive/10">
+            <CardHeader>
+                <CardTitle className="text-destructive flex items-center"><AlertTriangle className="mr-2 h-5 w-5"/>Avís de Seguretat</CardTitle>
+            </CardHeader>
+            <CardContent>
+                <p className="text-sm text-destructive">
+                    La contrasenya de superadministrador per defecte encara s'està utilitzant. Canvia-la a les variables d'entorn per a un ús segur en producció.
+                </p>
+            </CardContent>
+         </Card>
+        )}
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-headline font-bold text-foreground">Panell de Superadministrador</h1>
         <Button variant="outline" onClick={handleSuperAdminLogout}>
@@ -224,7 +267,7 @@ export default function AdminPage() {
         </CardHeader>
         <CardContent>
           {generatedPasswords.length > 0 ? (
-            <ul className="space-y-2 max-h-96 overflow-y-auto p-1"> {/* Augmentat max-h */}
+            <ul className="space-y-2 max-h-96 overflow-y-auto p-1">
               {generatedPasswords.map((pwd, index) => (
                 <li key={index} className="flex items-center justify-between p-3 bg-muted rounded-md font-mono text-sm shadow-sm">
                   <span>{pwd}</span>
