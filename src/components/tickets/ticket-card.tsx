@@ -23,7 +23,7 @@ import {
   CircleDotDashed, // Status: En Progreso
   CheckCircle2, // Status: Cerrada
   AlertTriangle, // Importance: Urgente
-  Shield, // Importance: Importante
+  ShieldAlert, // Importance: Importante (changed from Shield for better color differentiation)
   ChevronDownCircle, // Importance: Poco Importante
   CalendarDays,
   MapPin,
@@ -55,16 +55,16 @@ const repairTypeIcons: Record<string, React.ElementType> = {
   "General": ClipboardList,
 };
 
-const statusInfo: Record<TicketStatus, { icon: React.ElementType; variant: "default" | "secondary" | "destructive" | "outline" | null | undefined }> = {
-  "Abierta": { icon: CircleAlert, variant: "destructive" },
-  "En Progreso": { icon: CircleDotDashed, variant: "secondary" },
-  "Cerrada": { icon: CheckCircle2, variant: "default" },
+const statusInfo: Record<TicketStatus, { icon: React.ElementType; variant: "default" | "secondary" | "destructive" | "outline" | "success" | "warning" | "attention" | null | undefined }> = {
+  "Abierta": { icon: CircleAlert, variant: "destructive" }, // Rojo
+  "En Progreso": { icon: CircleDotDashed, variant: "warning" }, // Amarillo
+  "Cerrada": { icon: CheckCircle2, variant: "success" }, // Verde (accent color)
 };
 
-const importanceInfo: Record<ImportanceLevel, { icon: React.ElementType; variant: "default" | "secondary" | "destructive" | "outline" | null | undefined; label: string }> = {
-  "Urgente": { icon: AlertTriangle, variant: "destructive", label: "Urgente" },
-  "Importante": { icon: Shield, variant: "default", label: "Importante" },
-  "Poco Importante": { icon: ChevronDownCircle, variant: "outline", label: "Poco Imp." },
+const importanceInfo: Record<ImportanceLevel, { icon: React.ElementType; variant: "default" | "secondary" | "destructive" | "outline" | "success" | "warning" | "attention" | null | undefined; label: string }> = {
+  "Urgente": { icon: AlertTriangle, variant: "destructive", label: "Urgente" }, // Rojo
+  "Importante": { icon: ShieldAlert, variant: "attention", label: "Importante" }, // Naranja
+  "Poco Importante": { icon: ChevronDownCircle, variant: "warning", label: "Poco Imp." }, // Amarillo
 };
 
 
