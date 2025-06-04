@@ -1,3 +1,4 @@
+
 "use client";
 
 import {
@@ -46,7 +47,6 @@ const repairTypeIcons: Record<string, React.ElementType> = {
   "Iluminación": Lightbulb,
   "Climatización": Wind,
   "General": ClipboardList,
-  // Add more specific icons here if needed
 };
 
 const statusInfo: Record<TicketStatus, { icon: React.ElementType; colorClass: string; variant: "default" | "secondary" | "destructive" | "outline" | null | undefined }> = {
@@ -57,7 +57,7 @@ const statusInfo: Record<TicketStatus, { icon: React.ElementType; colorClass: st
 
 
 export default function TicketCard({ ticket, onUpdateStatus }: TicketCardProps) {
-  const RepairIcon = repairTypeIcons[ticket.repairType] || Construction; // Fallback to a generic icon
+  const RepairIcon = repairTypeIcons[ticket.repairType] || Construction;
   const StatusIcon = statusInfo[ticket.status].icon;
 
   const handleStatusChange = (newStatus: TicketStatus) => {
@@ -65,37 +65,37 @@ export default function TicketCard({ ticket, onUpdateStatus }: TicketCardProps) 
   };
 
   return (
-    <Card className="w-full shadow-lg hover:shadow-xl transition-shadow duration-300">
-      <CardHeader>
+    <Card className="w-full shadow-md hover:shadow-lg transition-shadow duration-200">
+      <CardHeader className="py-3 px-4">
         <div className="flex justify-between items-start">
           <div>
-            <CardTitle className="text-xl font-headline flex items-center">
-              <RepairIcon className="mr-2 h-6 w-6 text-primary" />
-              Incidencia de {ticket.repairType}
+            <CardTitle className="text-base font-headline flex items-center">
+              <RepairIcon className="mr-1.5 h-4 w-4 text-primary" />
+              {ticket.repairType}
             </CardTitle>
-            <CardDescription className="flex items-center mt-1">
-              <MapPin className="mr-1 h-4 w-4 text-muted-foreground" /> {ticket.location}
+            <CardDescription className="flex items-center mt-0.5 text-xs">
+              <MapPin className="mr-1 h-3 w-3 text-muted-foreground" /> {ticket.location}
             </CardDescription>
           </div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-8 w-8">
-                <MoreVertical className="h-5 w-5" />
+              <Button variant="ghost" size="icon" className="h-7 w-7">
+                <MoreVertical className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               {ticket.status !== "En Progreso" && ticket.status !== "Cerrada" && (
-                <DropdownMenuItem onClick={() => handleStatusChange("En Progreso")}>
+                <DropdownMenuItem onClick={() => handleStatusChange("En Progreso")} className="text-sm">
                   Marcar En Progreso
                 </DropdownMenuItem>
               )}
               {ticket.status !== "Cerrada" && (
-                 <DropdownMenuItem onClick={() => handleStatusChange("Cerrada")}>
+                 <DropdownMenuItem onClick={() => handleStatusChange("Cerrada")} className="text-sm">
                    Marcar Completa
                  </DropdownMenuItem>
               )}
                {ticket.status === "Cerrada" && ticket.status !== "Abierta" && (
-                 <DropdownMenuItem onClick={() => handleStatusChange("Abierta")}>
+                 <DropdownMenuItem onClick={() => handleStatusChange("Abierta")} className="text-sm">
                    Reabrir Incidencia
                  </DropdownMenuItem>
               )}
@@ -103,18 +103,18 @@ export default function TicketCard({ ticket, onUpdateStatus }: TicketCardProps) 
           </DropdownMenu>
         </div>
       </CardHeader>
-      <CardContent>
-        <p className="text-foreground leading-relaxed">{ticket.description}</p>
+      <CardContent className="py-2 px-4">
+        <p className="text-sm text-foreground leading-snug line-clamp-2">{ticket.description}</p>
       </CardContent>
-      <CardFooter className="flex justify-between items-center text-sm text-muted-foreground pt-4">
+      <CardFooter className="flex justify-between items-center text-xs text-muted-foreground py-2 px-4">
         <div className="flex items-center">
-          <Badge variant={statusInfo[ticket.status].variant || 'default'} className="text-xs">
-             <StatusIcon className="mr-1.5 h-3.5 w-3.5" />
+          <Badge variant={statusInfo[ticket.status].variant || 'default'} className="text-xs px-2 py-0.5">
+             <StatusIcon className="mr-1 h-3 w-3" />
             {ticket.status}
           </Badge>
         </div>
         <div className="flex items-center">
-          <CalendarDays className="mr-1.5 h-4 w-4" />
+          <CalendarDays className="mr-1 h-3 w-3" />
           <span>{new Date(ticket.createdAt).toLocaleDateString()}</span>
         </div>
       </CardFooter>
