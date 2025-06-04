@@ -9,12 +9,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import type { RepairType, TicketStatus } from "@/lib/types";
-import { repairTypes, ticketStatuses } from "@/lib/types";
+import { defaultRepairTypes, ticketStatuses } from "@/lib/types"; // Using default as a fallback
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
-import { Card } from "@/components/ui/card"; // Assuming Card is imported from ui
-import { Label } from "@/components/ui/label"; // Assuming Label is imported from ui
-import * as React from 'react';
+import { Card } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import React, { useState, useEffect } from 'react';
 
 
 interface FilterControlsProps {
@@ -27,6 +27,19 @@ interface FilterControlsProps {
 }
 
 export default function FilterControls({ filters, onFilterChange }: FilterControlsProps) {
+  const [availableRepairTypes, setAvailableRepairTypes] = useState<RepairType[]>(defaultRepairTypes);
+  const [availableLocations, setAvailableLocations] = useState<string[]>([]);
+
+  useEffect(() => {
+    const storedRepairTypes = localStorage.getItem('repairTypes');
+    if (storedRepairTypes) {
+      setAvailableRepairTypes(JSON.parse(storedRepairTypes));
+    }
+    const storedLocations = localStorage.getItem('locations');
+    if (storedLocations) {
+      setAvailableLocations(JSON.parse(storedLocations));
+    }
+  }, []);
   
   const handleResetFilters = () => {
     onFilterChange({
@@ -41,13 +54,32 @@ export default function FilterControls({ filters, onFilterChange }: FilterContro
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
         <div>
           <Label htmlFor="filter-location">Ubicación</Label>
-          <Input
-            id="filter-location"
-            placeholder="Buscar por área/habitación..."
-            value={filters.location}
-            onChange={(e) => onFilterChange({ ...filters, location: e.target.value })}
-            className="mt-1"
-          />
+          {availableLocations.length > 0 ? (
+            <Select
+              value={filters.location || "All"} // Use "All" or "" if no specific value is selected
+              onValueChange={(value) => onFilterChange({ ...filters, location: value === "All" ? "" : value })}
+            >
+              <SelectTrigger id="filter-location" className="mt-1">
+                <SelectValue placeholder="Filtrar por ubicación" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="All">Todas las Ubicaciones</SelectItem>
+                {availableLocations.map((loc) => (
+                  <SelectItem key={loc} value={loc}>
+                    {loc}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          ) : (
+            <Input
+              id="filter-location"
+              placeholder="Buscar por área/habitación..."
+              value={filters.location}
+              onChange={(e) => onFilterChange({ ...filters, location: e.target.value })}
+              className="mt-1"
+            />
+          )}
         </div>
         <div>
           <Label htmlFor="filter-repair-type">Tipo de Reparación</Label>
@@ -60,7 +92,7 @@ export default function FilterControls({ filters, onFilterChange }: FilterContro
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="All">Todos los Tipos de Reparación</SelectItem>
-              {repairTypes.map((type) => (
+              {availableRepairTypes.map((type) => (
                 <SelectItem key={type} value={type}>
                   {type}
                 </SelectItem>

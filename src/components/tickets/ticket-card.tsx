@@ -23,6 +23,7 @@ import {
   CheckCircle2,
   CalendarDays,
   MapPin,
+  Construction, // Generic icon for other types
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -31,19 +32,21 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { MoreVertical } from 'lucide-react';
+import React from "react";
 
 interface TicketCardProps {
   ticket: Ticket;
   onUpdateStatus: (ticketId: string, newStatus: TicketStatus) => void;
 }
 
-const repairTypeIcons: Record<RepairType, React.ElementType> = {
+const repairTypeIcons: Record<string, React.ElementType> = {
   "Eléctrico": Zap,
   "Fontanería": Wrench,
   "Carpintería": Hammer,
   "Iluminación": Lightbulb,
   "Climatización": Wind,
   "General": ClipboardList,
+  // Add more specific icons here if needed
 };
 
 const statusInfo: Record<TicketStatus, { icon: React.ElementType; colorClass: string; variant: "default" | "secondary" | "destructive" | "outline" | null | undefined }> = {
@@ -54,7 +57,7 @@ const statusInfo: Record<TicketStatus, { icon: React.ElementType; colorClass: st
 
 
 export default function TicketCard({ ticket, onUpdateStatus }: TicketCardProps) {
-  const RepairIcon = repairTypeIcons[ticket.repairType];
+  const RepairIcon = repairTypeIcons[ticket.repairType] || Construction; // Fallback to a generic icon
   const StatusIcon = statusInfo[ticket.status].icon;
 
   const handleStatusChange = (newStatus: TicketStatus) => {
@@ -71,7 +74,7 @@ export default function TicketCard({ ticket, onUpdateStatus }: TicketCardProps) 
               Incidencia de {ticket.repairType}
             </CardTitle>
             <CardDescription className="flex items-center mt-1">
-              <MapPin className="mr-1 h-4 w-4 text-muted-foreground" /> Habitación/Área: {ticket.location}
+              <MapPin className="mr-1 h-4 w-4 text-muted-foreground" /> {ticket.location}
             </CardDescription>
           </div>
           <DropdownMenu>

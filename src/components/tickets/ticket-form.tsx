@@ -22,16 +22,16 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import type { Ticket, RepairType, SuggestedTicket } from "@/lib/types";
-import { repairTypes } from "@/lib/types";
+import { defaultRepairTypes } from "@/lib/types"; // Using default as a fallback
 import { suggestRelatedTickets } from "@/ai/flows/suggest-related-tickets";
-import React, { useState, useMemo, useCallback } from "react";
+import React, { useState, useMemo, useCallback, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
 
 const ticketFormSchema = z.object({
   description: z.string().min(10, { message: "La descripción debe tener al menos 10 caracteres." }),
   location: z.string().min(1, { message: "La ubicación es obligatoria." }),
-  repairType: z.enum(repairTypes, { message: "Tipo de reparación no válido." }),
+  repairType: z.string().min(1, { message: "El tipo de reparación es obligatorio."}),
 });
 
 type TicketFormValues = z.infer<typeof ticketFormSchema>;
@@ -41,7 +41,6 @@ interface TicketFormProps {
   initialData?: Partial<TicketFormValues>;
 }
 
-// Debounce function
 const debounce = <F extends (...args: any[]) => any>(func: F, delay: number) => {
   let timeoutId: ReturnType<typeof setTimeout>;
   return (...args: Parameters<F>): Promise<ReturnType<F>> => {
@@ -53,14 +52,36 @@ const debounce = <F extends (...args: any[]) => any>(func: F, delay: number) => 
 };
 
 export default function TicketForm({ onSubmit, initialData }: TicketFormProps) {
+  const [availableRepairTypes, setAvailableRepairTypes] = useState<RepairType[]>(defaultRepairTypes);
+  const [availableLocations, setAvailableLocations] = useState<string[]>([]);
+
+  useEffect(() => {
+    const storedRepairTypes = localStorage.getItem('repairTypes');
+    if (storedRepairTypes) {
+      setAvailableRepairTypes(JSON.parse(storedRepairTypes));
+    }
+    const storedLocations = localStorage.getItem('locations');
+    if (storedLocations) {
+      setAvailableLocations(JSON.parse(storedLocations));
+    }
+  }, []);
+  
   const form = useForm<TicketFormValues>({
     resolver: zodResolver(ticketFormSchema),
     defaultValues: initialData || {
       description: "",
       location: "",
-      repairType: "General",
+      repairType: availableRepairTypes[0] || "General",
     },
   });
+  
+ useEffect(() => {
+    // Update default value for repairType if availableRepairTypes changes and form is not dirty
+    if (availableRepairTypes.length > 0 && !form.formState.dirtyFields.repairType) {
+        form.reset({ ...form.getValues(), repairType: availableRepairTypes.includes(form.getValues().repairType) ? form.getValues().repairType : availableRepairTypes[0] });
+    }
+  }, [availableRepairTypes, form]);
+
 
   const [suggestedTickets, setSuggestedTickets] = useState<SuggestedTicket[]>([]);
   const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);
@@ -85,13 +106,13 @@ export default function TicketForm({ onSubmit, initialData }: TicketFormProps) {
 
   const handleDescriptionChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
     const newDescription = event.target.value;
-    form.setValue("description", newDescription, { shouldValidate: true }); // Update RHF state
+    form.setValue("description", newDescription, { shouldValidate: true }); 
     debouncedFetchSuggestions(newDescription);
   };
   
   function handleSubmit(data: TicketFormValues) {
-    onSubmit(data);
-    form.reset();
+    onSubmit(data as Omit<Ticket, 'id' | 'createdAt' | 'updatedAt' | 'status'>);
+    form.reset({ description: "", location: "", repairType: availableRepairTypes[0] || "General"});
     setSuggestedTickets([]);
   }
 
@@ -147,9 +168,36 @@ export default function TicketForm({ onSubmit, initialData }: TicketFormProps) {
           render={({ field }) => (
             <FormItem>
               <FormLabel>Área / Número de Habitación</FormLabel>
-              <FormControl>
-                <Input placeholder="ej: Habitación 101, Vestíbulo, Cocina" {...field} />
-              </FormControl>
+              {availableLocations.length > 0 ? (
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Seleccionar ubicación predefinida" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {availableLocations.map((loc) => (
+                      <SelectItem key={loc} value={loc}>
+                        {loc}
+                      </SelectItem>
+                    ))}
+                     <SelectItem value="Otra">Otra (especificar)</SelectItem>
+                  </SelectContent>
+                </Select>
+              ) : (
+                <FormControl>
+                  <Input placeholder="ej: Habitación 101, Vestíbulo, Cocina" {...field} />
+                </FormControl>
+              )}
+              {field.value === "Otra" && availableLocations.length > 0 && (
+                 <FormControl>
+                    <Input 
+                        placeholder="Especificar otra ubicación" 
+                        onChange={(e) => field.onChange(e.target.value)} 
+                        className="mt-2"
+                    />
+                 </FormControl>
+              )}
               <FormMessage />
             </FormItem>
           )}
@@ -161,14 +209,14 @@ export default function TicketForm({ onSubmit, initialData }: TicketFormProps) {
           render={({ field }) => (
             <FormItem>
               <FormLabel>Tipo de Reparación</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
+              <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
                 <FormControl>
                   <SelectTrigger>
                     <SelectValue placeholder="Seleccionar tipo de reparación" />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  {repairTypes.map((type) => (
+                  {availableRepairTypes.map((type) => (
                     <SelectItem key={type} value={type}>
                       {type}
                     </SelectItem>
