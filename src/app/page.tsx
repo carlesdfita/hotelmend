@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect, useMemo } from 'react';
@@ -15,12 +16,14 @@ import {
   DialogDescription,
 } from '@/components/ui/dialog';
 import type { Ticket, RepairType, TicketStatus } from '@/lib/types';
-import { PlusCircle, Hotel } from 'lucide-react'; // Added Hotel icon for potential use
+import { PlusCircle, Hotel, Edit3 } from 'lucide-react'; // Added Edit3 icon
 
 export default function HomePage() {
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [filteredTickets, setFilteredTickets] = useState<Ticket[]>([]);
-  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [isCreateFormOpen, setIsCreateFormOpen] = useState(false);
+  const [isEditFormOpen, setIsEditFormOpen] = useState(false);
+  const [editingTicket, setEditingTicket] = useState<Ticket | null>(null);
 
   useEffect(() => {
     const initialTickets: Ticket[] = [
@@ -30,7 +33,7 @@ export default function HomePage() {
         location: 'Habitación 305',
         repairType: 'Iluminación',
         status: 'Abierta',
-        createdAt: new Date(new Date().setDate(new Date().getDate() - 2)), // 2 days ago
+        createdAt: new Date(new Date().setDate(new Date().getDate() - 2)), 
         updatedAt: new Date(new Date().setDate(new Date().getDate() - 2)),
       },
       {
@@ -39,7 +42,7 @@ export default function HomePage() {
         location: 'Cocina Principal',
         repairType: 'Fontanería',
         status: 'En Progreso',
-        createdAt: new Date(new Date().setDate(new Date().getDate() - 1)), // 1 day ago
+        createdAt: new Date(new Date().setDate(new Date().getDate() - 1)), 
         updatedAt: new Date(),
       },
       {
@@ -73,7 +76,23 @@ export default function HomePage() {
       status: 'Abierta',
     };
     setTickets(prevTickets => [ticket, ...prevTickets]);
-    setIsFormOpen(false);
+    setIsCreateFormOpen(false);
+  };
+
+  const handleOpenEditForm = (ticket: Ticket) => {
+    setEditingTicket(ticket);
+    setIsEditFormOpen(true);
+  };
+
+  const handleUpdateTicket = (updatedData: Omit<Ticket, 'id' | 'createdAt' | 'updatedAt' | 'status'>) => {
+    if (!editingTicket) return;
+    setTickets(prevTickets =>
+      prevTickets.map(t =>
+        t.id === editingTicket.id ? { ...editingTicket, ...updatedData, updatedAt: new Date() } : t
+      )
+    );
+    setIsEditFormOpen(false);
+    setEditingTicket(null);
   };
 
   const updateTicketStatus = (ticketId: string, newStatus: TicketStatus) => {
@@ -101,7 +120,6 @@ export default function HomePage() {
     if (filters.status !== 'All') {
       tempTickets = tempTickets.filter(t => t.status === filters.status);
     }
-    // Sort tickets: Open, In Progress, then Closed. Within each status, sort by newest first.
     tempTickets.sort((a, b) => {
       const statusOrder: Record<TicketStatus, number> = { 'Abierta': 1, 'En Progreso': 2, 'Cerrada': 3 };
       if (statusOrder[a.status] !== statusOrder[b.status]) {
@@ -121,7 +139,7 @@ export default function HomePage() {
           <h1 className="text-3xl font-headline font-bold text-foreground mb-4 sm:mb-0">
             Incidencias de Mantenimiento
           </h1>
-          <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
+          <Dialog open={isCreateFormOpen} onOpenChange={setIsCreateFormOpen}>
             <DialogTrigger asChild>
               <Button size="lg">
                 <PlusCircle className="mr-2 h-5 w-5" /> Crear Nueva Incidencia
@@ -134,14 +152,42 @@ export default function HomePage() {
                   Complete los detalles a continuación para informar un problema de mantenimiento.
                 </DialogDescription>
               </DialogHeader>
-              <TicketForm onSubmit={addTicket} />
+              <TicketForm onSubmit={addTicket} submitButtonText="Crear Incidencia" />
             </DialogContent>
           </Dialog>
         </div>
         
         <FilterControls filters={filters} onFilterChange={setFilters} />
         
-        <TicketList tickets={filteredTickets} onUpdateStatus={updateTicketStatus} />
+        <TicketList tickets={filteredTickets} onUpdateStatus={updateTicketStatus} onEditTicket={handleOpenEditForm} />
+
+        {/* Edit Ticket Dialog */}
+        <Dialog open={isEditFormOpen} onOpenChange={(isOpen) => {
+          setIsEditFormOpen(isOpen);
+          if (!isOpen) {
+            setEditingTicket(null); 
+          }
+        }}>
+          <DialogContent className="sm:max-w-[525px]">
+            <DialogHeader>
+              <DialogTitle className="font-headline text-2xl">Editar Incidencia</DialogTitle>
+              <DialogDescription>
+                Modifique los detalles de la incidencia a continuación.
+              </DialogDescription>
+            </DialogHeader>
+            {editingTicket && (
+              <TicketForm 
+                onSubmit={handleUpdateTicket} 
+                initialData={{
+                  description: editingTicket.description,
+                  location: editingTicket.location,
+                  repairType: editingTicket.repairType,
+                }}
+                submitButtonText="Guardar Cambios"
+              />
+            )}
+          </DialogContent>
+        </Dialog>
       </main>
       <footer className="text-center p-6 text-muted-foreground text-sm border-t">
         HotelMend &copy; {new Date().getFullYear()}

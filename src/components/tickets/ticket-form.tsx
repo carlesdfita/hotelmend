@@ -1,3 +1,4 @@
+
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -22,7 +23,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import type { Ticket, RepairType, SuggestedTicket } from "@/lib/types";
-import { defaultRepairTypes } from "@/lib/types"; // Using default as a fallback
+import { defaultRepairTypes } from "@/lib/types"; 
 import { suggestRelatedTickets } from "@/ai/flows/suggest-related-tickets";
 import React, { useState, useMemo, useCallback, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -34,11 +35,12 @@ const ticketFormSchema = z.object({
   repairType: z.string().min(1, { message: "El tipo de reparación es obligatorio."}),
 });
 
-type TicketFormValues = z.infer<typeof ticketFormSchema>;
+export type TicketFormValues = z.infer<typeof ticketFormSchema>;
 
 interface TicketFormProps {
-  onSubmit: (data: Omit<Ticket, 'id' | 'createdAt' | 'updatedAt' | 'status'>) => void;
+  onSubmit: (data: TicketFormValues) => void;
   initialData?: Partial<TicketFormValues>;
+  submitButtonText?: string;
 }
 
 const debounce = <F extends (...args: any[]) => any>(func: F, delay: number) => {
@@ -51,9 +53,12 @@ const debounce = <F extends (...args: any[]) => any>(func: F, delay: number) => 
   };
 };
 
-export default function TicketForm({ onSubmit, initialData }: TicketFormProps) {
+export default function TicketForm({ onSubmit, initialData, submitButtonText = "Crear Incidencia" }: TicketFormProps) {
   const [availableRepairTypes, setAvailableRepairTypes] = useState<RepairType[]>(defaultRepairTypes);
   const [availableLocations, setAvailableLocations] = useState<string[]>([]);
+  
+  const [customLocationValue, setCustomLocationValue] = useState('');
+  const [isCustomLocationActive, setIsCustomLocationActive] = useState(false);
 
   useEffect(() => {
     const storedRepairTypes = localStorage.getItem('repairTypes');
@@ -68,19 +73,33 @@ export default function TicketForm({ onSubmit, initialData }: TicketFormProps) {
   
   const form = useForm<TicketFormValues>({
     resolver: zodResolver(ticketFormSchema),
-    defaultValues: initialData || {
-      description: "",
-      location: "",
-      repairType: availableRepairTypes[0] || "General",
-    },
+    defaultValues: initialData || {}, // Default values are now more effectively handled by useEffect
   });
   
- useEffect(() => {
-    // Update default value for repairType if availableRepairTypes changes and form is not dirty
-    if (availableRepairTypes.length > 0 && !form.formState.dirtyFields.repairType) {
-        form.reset({ ...form.getValues(), repairType: availableRepairTypes.includes(form.getValues().repairType) ? form.getValues().repairType : availableRepairTypes[0] });
+  useEffect(() => {
+    if (initialData && Object.keys(initialData).length > 0) {
+      form.reset(initialData);
+      // Handle "Otra" location for editing
+      if (initialData.location && !availableLocations.includes(initialData.location) && initialData.location !== 'Otra') {
+        setIsCustomLocationActive(true);
+        setCustomLocationValue(initialData.location);
+        // We keep initialData.location as is in the form, Select will display it if not in options
+      } else {
+        setIsCustomLocationActive(false);
+        setCustomLocationValue("");
+      }
+    } else {
+      // For creating a new ticket or if initialData is empty
+      form.reset({
+        description: "",
+        location: availableLocations.length > 0 ? availableLocations[0] : "",
+        repairType: availableRepairTypes.length > 0 ? availableRepairTypes[0] : "General",
+      });
+      setIsCustomLocationActive(false);
+      setCustomLocationValue("");
     }
-  }, [availableRepairTypes, form]);
+    setSuggestedTickets([]);
+  }, [initialData, form, availableRepairTypes, availableLocations]);
 
 
   const [suggestedTickets, setSuggestedTickets] = useState<SuggestedTicket[]>([]);
@@ -111,9 +130,27 @@ export default function TicketForm({ onSubmit, initialData }: TicketFormProps) {
   };
   
   function handleSubmit(data: TicketFormValues) {
-    onSubmit(data as Omit<Ticket, 'id' | 'createdAt' | 'updatedAt' | 'status'>);
-    form.reset({ description: "", location: "", repairType: availableRepairTypes[0] || "General"});
+    let finalData = { ...data };
+    if (data.location === 'Otra' && isCustomLocationActive) {
+      if (customLocationValue.trim() === "") {
+        form.setError("location", {type: "manual", message: "Especifique la ubicación personalizada o seleccione una existente."});
+        return;
+      }
+      finalData.location = customLocationValue.trim();
+    } else if (data.location === 'Otra' && !isCustomLocationActive) {
+       // This case should ideally not happen if UI is right, but as a safeguard
+       form.setError("location", {type: "manual", message: "Seleccione 'Otra' y especifique la ubicación."});
+       return;
+    }
+    
+    onSubmit(finalData);
+    // Form reset is handled by parent dialog closing or by useEffect when initialData changes.
     setSuggestedTickets([]);
+    // Reset custom location fields for next use if it's a create form context
+    if (!initialData) {
+        setIsCustomLocationActive(false);
+        setCustomLocationValue("");
+    }
   }
 
   return (
@@ -169,7 +206,27 @@ export default function TicketForm({ onSubmit, initialData }: TicketFormProps) {
             <FormItem>
               <FormLabel>Área / Número de Habitación</FormLabel>
               {availableLocations.length > 0 ? (
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <Select 
+                  onValueChange={(value) => {
+                    field.onChange(value);
+                    if (value === 'Otra') {
+                      setIsCustomLocationActive(true);
+                      // If editing and switching to 'Otra', preserve existing custom text if any, or clear for new input.
+                      // For now, if they switch to 'Otra', they are expected to type/confirm.
+                      // If initialData.location was custom, customLocationValue is already set.
+                      // If they select 'Otra' from a predefined, customLocationValue may be empty.
+                      if (initialData?.location && !availableLocations.includes(initialData.location) && value === 'Otra') {
+                         setCustomLocationValue(initialData.location); // Keep if was custom
+                      } else {
+                         setCustomLocationValue(''); // Clear for new custom input or if switched from predefined
+                      }
+                    } else {
+                      setIsCustomLocationActive(false);
+                      setCustomLocationValue(""); 
+                    }
+                  }} 
+                  value={field.value}
+                >
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue placeholder="Seleccionar ubicación predefinida" />
@@ -185,19 +242,46 @@ export default function TicketForm({ onSubmit, initialData }: TicketFormProps) {
                   </SelectContent>
                 </Select>
               ) : (
+                 // Fallback to input if no predefined locations (also handles initial custom value for edit)
                 <FormControl>
-                  <Input placeholder="ej: Habitación 101, Vestíbulo, Cocina" {...field} />
+                  <Input 
+                    placeholder="ej: Habitación 101, Vestíbulo, Cocina" 
+                    {...field} 
+                    // If there are no available locations, this input is the direct source
+                    // and the "Otra" logic is not needed here.
+                    // isCustomLocationActive should be true in this scenario.
+                    // And customLocationValue should mirror field.value.
+                    // This part is simplified: if no availableLocations, it's just a text input.
+                    // The 'useEffect' populates field.value correctly for edit.
+                    // For create, it's an empty input.
+                    onChange={(e) => {
+                        field.onChange(e.target.value);
+                        // If there are no predefined locations, this input is the direct source.
+                        // We can treat this as a custom location scenario by default.
+                        setIsCustomLocationActive(true); 
+                        setCustomLocationValue(e.target.value);
+                    }}
+                  />
                 </FormControl>
               )}
-              {field.value === "Otra" && availableLocations.length > 0 && (
+              {isCustomLocationActive && availableLocations.length > 0 && ( // Only show custom input if 'Otra' is selected AND there are predefined options
                  <FormControl>
                     <Input 
                         placeholder="Especificar otra ubicación" 
-                        onChange={(e) => field.onChange(e.target.value)} 
+                        value={customLocationValue}
+                        onChange={(e) => setCustomLocationValue(e.target.value)}
                         className="mt-2"
                     />
                  </FormControl>
               )}
+               {!availableLocations.length && ( // If no predefined locations, ensure the input is directly tied to the form value
+                  <Input
+                    placeholder="ej: Habitación 101, Vestíbulo, Cocina"
+                    value={field.value}
+                    onChange={(e) => field.onChange(e.target.value)}
+                    className="hidden" // This is just to satisfy RHF, actual input rendered above
+                  />
+                )}
               <FormMessage />
             </FormItem>
           )}
@@ -227,7 +311,7 @@ export default function TicketForm({ onSubmit, initialData }: TicketFormProps) {
             </FormItem>
           )}
         />
-        <Button type="submit" className="w-full">Crear Incidencia</Button>
+        <Button type="submit" className="w-full">{submitButtonText}</Button>
       </form>
     </Form>
   );

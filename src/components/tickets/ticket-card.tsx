@@ -24,12 +24,14 @@ import {
   CheckCircle2,
   CalendarDays,
   MapPin,
-  Construction, // Generic icon for other types
+  Construction, 
+  Edit3, // Import Edit3 icon
 } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { MoreVertical } from 'lucide-react';
@@ -38,6 +40,7 @@ import React from "react";
 interface TicketCardProps {
   ticket: Ticket;
   onUpdateStatus: (ticketId: string, newStatus: TicketStatus) => void;
+  onEditTicket: (ticket: Ticket) => void; 
 }
 
 const repairTypeIcons: Record<string, React.ElementType> = {
@@ -56,7 +59,7 @@ const statusInfo: Record<TicketStatus, { icon: React.ElementType; colorClass: st
 };
 
 
-export default function TicketCard({ ticket, onUpdateStatus }: TicketCardProps) {
+export default function TicketCard({ ticket, onUpdateStatus, onEditTicket }: TicketCardProps) {
   const RepairIcon = repairTypeIcons[ticket.repairType] || Construction;
   const StatusIcon = statusInfo[ticket.status].icon;
 
@@ -65,25 +68,43 @@ export default function TicketCard({ ticket, onUpdateStatus }: TicketCardProps) 
   };
 
   return (
-    <Card className="w-full shadow-md hover:shadow-lg transition-shadow duration-200">
-      <CardHeader className="py-3 px-4">
-        <div className="flex justify-between items-start">
-          <div>
-            <CardTitle className="text-base font-headline flex items-center">
-              <RepairIcon className="mr-1.5 h-4 w-4 text-primary" />
+    <Card className="w-full shadow-md hover:shadow-lg transition-shadow duration-200 flex flex-col sm:flex-row">
+      <div className="flex-grow p-3 pr-2">
+        <div className="flex justify-between items-start mb-1">
+            <CardTitle className="text-sm font-headline flex items-center">
+              <RepairIcon className="mr-1.5 h-3.5 w-3.5 text-primary" />
               {ticket.repairType}
             </CardTitle>
-            <CardDescription className="flex items-center mt-0.5 text-xs">
-              <MapPin className="mr-1 h-3 w-3 text-muted-foreground" /> {ticket.location}
-            </CardDescription>
-          </div>
+             <Badge variant={statusInfo[ticket.status].variant || 'default'} className="text-xs px-1.5 py-0.5 h-[18px] leading-tight">
+               <StatusIcon className="mr-1 h-2.5 w-2.5" />
+              {ticket.status}
+            </Badge>
+        </div>
+        <p className="text-xs text-foreground leading-snug line-clamp-2 mb-1 sm:mb-1.5">{ticket.description}</p>
+        <div className="flex justify-between items-center text-xs text-muted-foreground">
+            <div className="flex items-center">
+              <MapPin className="mr-1 h-3 w-3" /> {ticket.location}
+            </div>
+            <div className="flex items-center">
+              <CalendarDays className="mr-1 h-3 w-3" />
+              <span>{new Date(ticket.createdAt).toLocaleDateString()}</span>
+            </div>
+        </div>
+      </div>
+      <div className="flex-shrink-0 p-2 sm:border-l sm:pl-2 flex items-center justify-center">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon" className="h-7 w-7">
                 <MoreVertical className="h-4 w-4" />
+                <span className="sr-only">Más opciones</span>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => onEditTicket(ticket)} className="text-sm">
+                <Edit3 className="mr-2 h-3.5 w-3.5" />
+                Editar Incidencia
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
               {ticket.status !== "En Progreso" && ticket.status !== "Cerrada" && (
                 <DropdownMenuItem onClick={() => handleStatusChange("En Progreso")} className="text-sm">
                   Marcar En Progreso
@@ -102,22 +123,6 @@ export default function TicketCard({ ticket, onUpdateStatus }: TicketCardProps) 
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
-      </CardHeader>
-      <CardContent className="py-2 px-4">
-        <p className="text-sm text-foreground leading-snug line-clamp-2">{ticket.description}</p>
-      </CardContent>
-      <CardFooter className="flex justify-between items-center text-xs text-muted-foreground py-2 px-4">
-        <div className="flex items-center">
-          <Badge variant={statusInfo[ticket.status].variant || 'default'} className="text-xs px-2 py-0.5">
-             <StatusIcon className="mr-1 h-3 w-3" />
-            {ticket.status}
-          </Badge>
-        </div>
-        <div className="flex items-center">
-          <CalendarDays className="mr-1 h-3 w-3" />
-          <span>{new Date(ticket.createdAt).toLocaleDateString()}</span>
-        </div>
-      </CardFooter>
     </Card>
   );
 }

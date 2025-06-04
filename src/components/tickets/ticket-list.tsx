@@ -1,3 +1,4 @@
+
 "use client";
 
 import type { Ticket, TicketStatus } from "@/lib/types";
@@ -6,9 +7,10 @@ import TicketCard from "./ticket-card";
 interface TicketListProps {
   tickets: Ticket[];
   onUpdateStatus: (ticketId: string, newStatus: TicketStatus) => void;
+  onEditTicket: (ticket: Ticket) => void; 
 }
 
-export default function TicketList({ tickets, onUpdateStatus }: TicketListProps) {
+export default function TicketList({ tickets, onUpdateStatus, onEditTicket }: TicketListProps) {
   if (tickets.length === 0) {
     return (
       <div className="text-center py-10">
@@ -19,9 +21,9 @@ export default function TicketList({ tickets, onUpdateStatus }: TicketListProps)
   }
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-4"> {/* Reduced gap from 6 to 4 for tighter packing */}
       {tickets.map((ticket) => (
-        <TicketCard key={ticket.id} ticket={ticket} onUpdateStatus={onUpdateStatus} />
+        <TicketCard key={ticket.id} ticket={ticket} onUpdateStatus={onUpdateStatus} onEditTicket={onEditTicket} />
       ))}
     </div>
   );
