@@ -68,6 +68,15 @@ export default function HomePage() {
         updatedAt: new Date(new Date().setDate(new Date().getDate() - 3)),
       },
     ];
+    // Simulate loading from localStorage for locations and repair types for demo consistency
+    if (typeof window !== 'undefined') {
+        if (!localStorage.getItem('locations')) {
+            localStorage.setItem('locations', JSON.stringify(["Recepción Vestíbulo", "Cocina Principal", "Gimnasio", "Piscina", "Habitación 305"]));
+        }
+        if (!localStorage.getItem('repairTypes')) {
+            localStorage.setItem('repairTypes', JSON.stringify(["Eléctrico", "Fontanería", "Carpintería", "Iluminación", "Climatización", "General"]));
+        }
+    }
     setTickets(initialTickets);
   }, []);
   
@@ -107,29 +116,30 @@ export default function HomePage() {
     );
   };
 
-  const [filters, setFilters] = useState<{ repairType: RepairType | 'All'; location: string; status: TicketStatus[]; importance: ImportanceLevel | 'All' }>({
-    repairType: 'All',
-    location: '',
-    status: ['Abierta', 'En Progreso'],
-    importance: 'All',
+  const [filters, setFilters] = useState<{ repairType: RepairType[]; location: string[]; status: TicketStatus[]; importance: ImportanceLevel[] }>({
+    repairType: [], // Empty array means all repair types
+    location: [],   // Empty array means all locations
+    status: ['Abierta', 'En Progreso'], // Default to open and in progress
+    importance: [], // Empty array means all importance levels
   });
 
   useEffect(() => {
     let tempTickets = [...tickets];
-    if (filters.repairType !== 'All') {
-      tempTickets = tempTickets.filter(t => t.repairType === filters.repairType);
+    
+    if (filters.repairType.length > 0) {
+      tempTickets = tempTickets.filter(t => filters.repairType.includes(t.repairType));
     }
-    if (filters.location) {
-      tempTickets = tempTickets.filter(t => t.location.toLowerCase().includes(filters.location.toLowerCase()));
+    if (filters.location.length > 0) {
+      tempTickets = tempTickets.filter(t => filters.location.includes(t.location));
     }
     if (filters.status.length > 0) {
       tempTickets = tempTickets.filter(t => filters.status.includes(t.status));
     } else {
-      // If no statuses are selected, show no tickets
+      // If no statuses are selected, show no tickets (special behavior for status filter)
       tempTickets = [];
     }
-    if (filters.importance !== 'All') {
-      tempTickets = tempTickets.filter(t => t.importance === filters.importance);
+    if (filters.importance.length > 0) {
+      tempTickets = tempTickets.filter(t => filters.importance.includes(t.importance));
     }
 
     tempTickets.sort((a, b) => {
