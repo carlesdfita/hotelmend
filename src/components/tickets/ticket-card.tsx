@@ -23,7 +23,7 @@ import {
   CircleDotDashed, // Status: En Progreso
   CheckCircle2, // Status: Cerrada
   AlertTriangle, // Importance: Urgente
-  ShieldAlert, // Importance: Importante (changed from Shield for better color differentiation)
+  ShieldAlert, // Importance: Importante (icono)
   ChevronDownCircle, // Importance: Poco Importante
   CalendarDays,
   MapPin,
@@ -63,7 +63,7 @@ const statusInfo: Record<TicketStatus, { icon: React.ElementType; variant: "defa
 
 const importanceInfo: Record<ImportanceLevel, { icon: React.ElementType; variant: "default" | "secondary" | "destructive" | "outline" | "success" | "warning" | "attention" | null | undefined; label: string }> = {
   "Urgente": { icon: AlertTriangle, variant: "destructive", label: "Urgente" }, // Rojo
-  "Importante": { icon: ShieldAlert, variant: "attention", label: "Importante" }, // Naranja
+  "Importante": { icon: ShieldAlert, variant: "warning", label: "Importante" }, // Amarillo
   "Poco Importante": { icon: ChevronDownCircle, variant: "warning", label: "Poco Imp." }, // Amarillo
 };
 
