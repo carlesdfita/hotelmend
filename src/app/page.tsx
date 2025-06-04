@@ -107,10 +107,10 @@ export default function HomePage() {
     );
   };
 
-  const [filters, setFilters] = useState<{ repairType: RepairType | 'All'; location: string; status: TicketStatus | 'All'; importance: ImportanceLevel | 'All' }>({
+  const [filters, setFilters] = useState<{ repairType: RepairType | 'All'; location: string; status: TicketStatus[]; importance: ImportanceLevel | 'All' }>({
     repairType: 'All',
     location: '',
-    status: 'All',
+    status: ['Abierta', 'En Progreso'],
     importance: 'All',
   });
 
@@ -122,8 +122,11 @@ export default function HomePage() {
     if (filters.location) {
       tempTickets = tempTickets.filter(t => t.location.toLowerCase().includes(filters.location.toLowerCase()));
     }
-    if (filters.status !== 'All') {
-      tempTickets = tempTickets.filter(t => t.status === filters.status);
+    if (filters.status.length > 0) {
+      tempTickets = tempTickets.filter(t => filters.status.includes(t.status));
+    } else {
+      // If no statuses are selected, show no tickets
+      tempTickets = [];
     }
     if (filters.importance !== 'All') {
       tempTickets = tempTickets.filter(t => t.importance === filters.importance);

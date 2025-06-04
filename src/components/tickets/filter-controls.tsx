@@ -9,10 +9,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import type { RepairType, TicketStatus, ImportanceLevel } from "@/lib/types";
 import { defaultRepairTypes, ticketStatuses, importanceLevels } from "@/lib/types";
 import { Button } from "@/components/ui/button";
-import { X } from "lucide-react";
+import { X, ListFilter } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import React, { useState, useEffect } from 'react';
@@ -22,7 +30,7 @@ interface FilterControlsProps {
   filters: {
     repairType: RepairType | "All";
     location: string;
-    status: TicketStatus | "All";
+    status: TicketStatus[];
     importance: ImportanceLevel | "All";
   };
   onFilterChange: (filters: FilterControlsProps["filters"]) => void;
@@ -47,10 +55,26 @@ export default function FilterControls({ filters, onFilterChange }: FilterContro
     onFilterChange({
       repairType: "All",
       location: "",
-      status: "All",
+      status: ['Abierta', 'En Progreso'],
       importance: "All",
     });
   };
+
+  const handleStatusChange = (statusValue: TicketStatus) => {
+    const newStatusFilter = filters.status.includes(statusValue)
+      ? filters.status.filter(s => s !== statusValue)
+      : [...filters.status, statusValue];
+    onFilterChange({ ...filters, status: newStatusFilter });
+  };
+  
+  const getStatusButtonText = () => {
+    if (filters.status.length === 0) return "Ningún estado";
+    if (filters.status.length === ticketStatuses.length) return "Todos los estados";
+    if (filters.status.length === 2 && filters.status.includes('Abierta') && filters.status.includes('En Progreso')) return "Abierta y En Progreso";
+    if (filters.status.length === 1) return filters.status[0];
+    return `${filters.status.length} estados seleccionados`;
+  };
+
 
   return (
     <Card className="mb-6 p-4">
@@ -104,23 +128,28 @@ export default function FilterControls({ filters, onFilterChange }: FilterContro
           </Select>
         </div>
         <div>
-          <Label htmlFor="filter-status">Estado</Label>
-          <Select
-            value={filters.status}
-            onValueChange={(value: TicketStatus | "All") => onFilterChange({ ...filters, status: value })}
-          >
-            <SelectTrigger id="filter-status" className="mt-1">
-              <SelectValue placeholder="Filtrar por estado" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="All">Todos los Estados</SelectItem>
+          <Label htmlFor="filter-status-dropdown">Estado</Label>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" id="filter-status-dropdown" className="w-full justify-between mt-1">
+                {getStatusButtonText()}
+                <ListFilter className="ml-2 h-4 w-4 opacity-50" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-56">
+              <DropdownMenuLabel>Seleccionar Estados</DropdownMenuLabel>
+              <DropdownMenuSeparator />
               {ticketStatuses.map((status) => (
-                <SelectItem key={status} value={status}>
+                <DropdownMenuCheckboxItem
+                  key={status}
+                  checked={filters.status.includes(status)}
+                  onCheckedChange={() => handleStatusChange(status)}
+                >
                   {status}
-                </SelectItem>
+                </DropdownMenuCheckboxItem>
               ))}
-            </SelectContent>
-          </Select>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
         <div>
           <Label htmlFor="filter-importance">Importancia</Label>
