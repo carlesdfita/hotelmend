@@ -8,8 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { PlusCircle, Trash2 } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 
-// Simulate fetching initial data or use a default set for example purposes
-const initialLocations: string[] = ["Recepción Vestíbulo", "Cocina Principal", "Gimnasio", "Piscina"];
+const initialLocations: string[] = ["Recepció Vestíbul", "Cuina Principal", "Gimnàs", "Piscina"];
 
 
 export default function LocationsPage() {
@@ -18,12 +17,11 @@ export default function LocationsPage() {
   const { toast } = useToast();
 
   useEffect(() => {
-    // In a real app, you might fetch this from a DB or localStorage
     const storedLocations = localStorage.getItem('locations');
     if (storedLocations) {
       setLocations(JSON.parse(storedLocations));
     } else {
-      setLocations(initialLocations); // Default locations if none stored
+      setLocations(initialLocations); 
       localStorage.setItem('locations', JSON.stringify(initialLocations));
     }
   }, []);
@@ -32,7 +30,7 @@ export default function LocationsPage() {
     if (newLocation.trim() === '') {
       toast({
         title: "Error",
-        description: "El nombre de la ubicación no puede estar vacío.",
+        description: "El nom de la ubicació no pot estar buit.",
         variant: "destructive",
       });
       return;
@@ -40,7 +38,7 @@ export default function LocationsPage() {
     if (locations.map(loc => loc.toLowerCase()).includes(newLocation.trim().toLowerCase())) {
        toast({
         title: "Error",
-        description: "Esta ubicación ya existe.",
+        description: "Aquesta ubicació ja existeix.",
         variant: "destructive",
       });
       return;
@@ -50,8 +48,8 @@ export default function LocationsPage() {
     localStorage.setItem('locations', JSON.stringify(updatedLocations));
     setNewLocation('');
     toast({
-      title: "Éxito",
-      description: `Ubicación "${newLocation.trim()}" añadida.`,
+      title: "Èxit",
+      description: `Ubicació "${newLocation.trim()}" afegida.`,
     });
   };
 
@@ -60,38 +58,38 @@ export default function LocationsPage() {
     setLocations(updatedLocations);
     localStorage.setItem('locations', JSON.stringify(updatedLocations));
     toast({
-      title: "Éxito",
-      description: `Ubicación "${locationToDelete}" eliminada.`,
+      title: "Èxit",
+      description: `Ubicació "${locationToDelete}" eliminada.`,
     });
   };
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-2xl font-headline">Configurar Ubicaciones</CardTitle>
-        <CardDescription>Añada, edite o elimine las ubicaciones predefinidas para las incidencias.</CardDescription>
+        <CardTitle className="text-2xl font-headline">Configurar Ubicacions</CardTitle>
+        <CardDescription>Afegiu, editeu o elimineu les ubicacions predefinides per a les incidències.</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="mb-6 space-y-4">
-          <h3 className="text-lg font-semibold">Añadir Nueva Ubicación</h3>
+          <h3 className="text-lg font-semibold">Afegir Nova Ubicació</h3>
           <div className="flex gap-2">
             <Input
               type="text"
               value={newLocation}
               onChange={(e) => setNewLocation(e.target.value)}
-              placeholder="Ej: Habitación 101, Salón A"
+              placeholder="Ex: Habitació 101, Saló A"
               className="max-w-sm"
             />
             <Button onClick={handleAddLocation}>
-              <PlusCircle className="mr-2 h-4 w-4" /> Añadir Ubicación
+              <PlusCircle className="mr-2 h-4 w-4" /> Afegir Ubicació
             </Button>
           </div>
         </div>
 
         <div>
-          <h3 className="text-lg font-semibold mb-3">Listado de Ubicaciones Existentes</h3>
+          <h3 className="text-lg font-semibold mb-3">Llistat d'Ubicacions Existents</h3>
           {locations.length === 0 ? (
-            <p className="text-muted-foreground">No hay ubicaciones configuradas.</p>
+            <p className="text-muted-foreground">No hi ha ubicacions configurades.</p>
           ) : (
             <ul className="space-y-2">
               {locations.map((loc) => (

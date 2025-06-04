@@ -8,9 +8,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { PlusCircle, Trash2 } from 'lucide-react';
 import type { RepairType } from '@/lib/types';
 import { useToast } from "@/hooks/use-toast";
+import { defaultRepairTypes } from '@/lib/types';
 
-// Default repair types, can be overridden or extended via settings page
-const initialRepairTypes: RepairType[] = ["Eléctrico", "Fontanería", "Carpintería", "Iluminación", "Climatización", "General"];
 
 export default function RepairTypesPage() {
   const [repairTypes, setRepairTypes] = useState<RepairType[]>([]);
@@ -22,8 +21,8 @@ export default function RepairTypesPage() {
     if (storedRepairTypes) {
       setRepairTypes(JSON.parse(storedRepairTypes));
     } else {
-      setRepairTypes(initialRepairTypes);
-      localStorage.setItem('repairTypes', JSON.stringify(initialRepairTypes));
+      setRepairTypes(defaultRepairTypes);
+      localStorage.setItem('repairTypes', JSON.stringify(defaultRepairTypes));
     }
   }, []);
 
@@ -31,7 +30,7 @@ export default function RepairTypesPage() {
     if (newRepairType.trim() === '') {
       toast({
         title: "Error",
-        description: "El nombre de la tipología no puede estar vacío.",
+        description: "El nom de la tipologia no pot estar buit.",
         variant: "destructive",
       });
       return;
@@ -39,7 +38,7 @@ export default function RepairTypesPage() {
     if (repairTypes.map(rt => rt.toLowerCase()).includes(newRepairType.trim().toLowerCase())) {
        toast({
         title: "Error",
-        description: "Esta tipología ya existe.",
+        description: "Aquesta tipologia ja existeix.",
         variant: "destructive",
       });
       return;
@@ -49,8 +48,8 @@ export default function RepairTypesPage() {
     localStorage.setItem('repairTypes', JSON.stringify(updatedRepairTypes));
     setNewRepairType('');
     toast({
-      title: "Éxito",
-      description: `Tipología "${newRepairType.trim()}" añadida.`,
+      title: "Èxit",
+      description: `Tipologia "${newRepairType.trim()}" afegida.`,
     });
   };
 
@@ -59,38 +58,38 @@ export default function RepairTypesPage() {
     setRepairTypes(updatedRepairTypes);
     localStorage.setItem('repairTypes', JSON.stringify(updatedRepairTypes));
      toast({
-      title: "Éxito",
-      description: `Tipología "${typeToDelete}" eliminada.`,
+      title: "Èxit",
+      description: `Tipologia "${typeToDelete}" eliminada.`,
     });
   };
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-2xl font-headline">Configurar Tipologías de Reparación</CardTitle>
-        <CardDescription>Añada, edite o elimine los tipos de reparación disponibles en el sistema.</CardDescription>
+        <CardTitle className="text-2xl font-headline">Configurar Tipologies de Reparació</CardTitle>
+        <CardDescription>Afegiu, editeu o elimineu els tipus de reparació disponibles al sistema.</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="mb-6 space-y-4">
-          <h3 className="text-lg font-semibold">Añadir Nueva Tipología</h3>
+          <h3 className="text-lg font-semibold">Afegir Nova Tipologia</h3>
           <div className="flex gap-2">
             <Input
               type="text"
               value={newRepairType}
               onChange={(e) => setNewRepairType(e.target.value)}
-              placeholder="Ej: Jardinería, Pintura"
+              placeholder="Ex: Jardineria, Pintura"
               className="max-w-sm"
             />
             <Button onClick={handleAddRepairType}>
-              <PlusCircle className="mr-2 h-4 w-4" /> Añadir Tipología
+              <PlusCircle className="mr-2 h-4 w-4" /> Afegir Tipologia
             </Button>
           </div>
         </div>
 
         <div>
-          <h3 className="text-lg font-semibold mb-3">Listado de Tipologías Existentes</h3>
+          <h3 className="text-lg font-semibold mb-3">Llistat de Tipologies Existents</h3>
           {repairTypes.length === 0 ? (
-            <p className="text-muted-foreground">No hay tipologías configuradas.</p>
+            <p className="text-muted-foreground">No hi ha tipologies configurades.</p>
           ) : (
             <ul className="space-y-2">
               {repairTypes.map((type) => (

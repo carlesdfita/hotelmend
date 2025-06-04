@@ -29,41 +29,41 @@ export default function HomePage() {
     const initialTickets: Ticket[] = [
       {
         id: '1',
-        description: 'La luz del baño de la Habitación 305 parpadea constantemente. Necesita reemplazo.',
-        location: 'Habitación 305',
-        repairType: 'Iluminación',
-        status: 'Abierta',
-        importance: 'Importante',
+        description: 'La llum del bany de l\'Habitació 305 parpelleja constantment. Necessita reemplaçament.',
+        location: 'Habitació 305',
+        repairType: 'Il·luminació',
+        status: 'Oberta',
+        importance: 'Important',
         createdAt: new Date(new Date().setDate(new Date().getDate() - 2)), 
         updatedAt: new Date(new Date().setDate(new Date().getDate() - 2)),
       },
       {
         id: '2',
-        description: 'El lavabo de la cocina principal está atascado. El agua drena muy lentamente.',
-        location: 'Cocina Principal',
-        repairType: 'Fontanería',
-        status: 'En Progreso',
-        importance: 'Urgente',
+        description: 'El lavabo de la cuina principal està embussat. L\'aigua drena molt lentament.',
+        location: 'Cuina Principal',
+        repairType: 'Lampisteria',
+        status: 'En Progrés',
+        importance: 'Urgent',
         createdAt: new Date(new Date().setDate(new Date().getDate() - 1)), 
         updatedAt: new Date(),
       },
       {
         id: '3',
-        description: 'El aire acondicionado del gimnasio no enfría eficazmente. Parece que expulsa aire caliente.',
-        location: 'Gimnasio',
-        repairType: 'Climatización',
-        status: 'Abierta',
-        importance: 'Importante',
+        description: 'L\'aire condicionat del gimnàs no refreda eficaçment. Sembla que expulsa aire calent.',
+        location: 'Gimnàs',
+        repairType: 'Climatització',
+        status: 'Oberta',
+        importance: 'Important',
         createdAt: new Date(),
         updatedAt: new Date(),
       },
        {
         id: '4',
-        description: 'El panel de madera del mostrador de recepción está suelto.',
-        location: 'Recepción Vestíbulo',
-        repairType: 'Carpintería',
-        status: 'Cerrada',
-        importance: 'Poco Importante',
+        description: 'El panell de fusta del taulell de recepció està solt.',
+        location: 'Recepció Vestíbul',
+        repairType: 'Fusteria',
+        status: 'Tancada',
+        importance: 'Poc Important',
         createdAt: new Date(new Date().setDate(new Date().getDate() - 5)),
         updatedAt: new Date(new Date().setDate(new Date().getDate() - 3)),
       },
@@ -71,10 +71,10 @@ export default function HomePage() {
     // Simulate loading from localStorage for locations and repair types for demo consistency
     if (typeof window !== 'undefined') {
         if (!localStorage.getItem('locations')) {
-            localStorage.setItem('locations', JSON.stringify(["Recepción Vestíbulo", "Cocina Principal", "Gimnasio", "Piscina", "Habitación 305"]));
+            localStorage.setItem('locations', JSON.stringify(["Recepció Vestíbul", "Cuina Principal", "Gimnàs", "Piscina", "Habitació 305"]));
         }
         if (!localStorage.getItem('repairTypes')) {
-            localStorage.setItem('repairTypes', JSON.stringify(["Eléctrico", "Fontanería", "Carpintería", "Iluminación", "Climatización", "General"]));
+            localStorage.setItem('repairTypes', JSON.stringify(["Elèctric", "Lampisteria", "Fusteria", "Il·luminació", "Climatització", "General"]));
         }
     }
     setTickets(initialTickets);
@@ -86,7 +86,7 @@ export default function HomePage() {
       id: crypto.randomUUID(), 
       createdAt: new Date(),
       updatedAt: new Date(),
-      status: 'Abierta',
+      status: 'Oberta',
     };
     setTickets(prevTickets => [ticket, ...prevTickets]);
     setIsCreateFormOpen(false);
@@ -117,10 +117,10 @@ export default function HomePage() {
   };
 
   const [filters, setFilters] = useState<{ repairType: RepairType[]; location: string[]; status: TicketStatus[]; importance: ImportanceLevel[] }>({
-    repairType: [], // Empty array means all repair types
-    location: [],   // Empty array means all locations
-    status: ['Abierta', 'En Progreso'], // Default to open and in progress
-    importance: [], // Empty array means all importance levels
+    repairType: [], 
+    location: [],   
+    status: ['Oberta', 'En Progrés'], 
+    importance: [], 
   });
 
   useEffect(() => {
@@ -135,7 +135,6 @@ export default function HomePage() {
     if (filters.status.length > 0) {
       tempTickets = tempTickets.filter(t => filters.status.includes(t.status));
     } else {
-      // If no statuses are selected, show no tickets (special behavior for status filter)
       tempTickets = [];
     }
     if (filters.importance.length > 0) {
@@ -143,8 +142,8 @@ export default function HomePage() {
     }
 
     tempTickets.sort((a, b) => {
-      const importanceOrder: Record<ImportanceLevel, number> = { 'Urgente': 1, 'Importante': 2, 'Poco Importante': 3 };
-      const statusOrder: Record<TicketStatus, number> = { 'Abierta': 1, 'En Progreso': 2, 'Cerrada': 3 };
+      const importanceOrder: Record<ImportanceLevel, number> = { 'Urgent': 1, 'Important': 2, 'Poc Important': 3 };
+      const statusOrder: Record<TicketStatus, number> = { 'Oberta': 1, 'En Progrés': 2, 'Tancada': 3 };
 
       if (importanceOrder[a.importance] !== importanceOrder[b.importance]) {
         return importanceOrder[a.importance] - importanceOrder[b.importance];
@@ -164,24 +163,24 @@ export default function HomePage() {
       <main className="flex-grow container mx-auto p-4 md:p-6 lg:p-8">
         <div className="flex flex-col sm:flex-row justify-between items-center mb-8">
           <h1 className="text-3xl font-headline font-bold text-foreground mb-4 sm:mb-0">
-            Incidencias de Mantenimiento
+            Incidències de Manteniment
           </h1>
           <Dialog open={isCreateFormOpen} onOpenChange={setIsCreateFormOpen}>
             <DialogTrigger asChild>
               <Button size="lg">
-                <PlusCircle className="mr-2 h-5 w-5" /> Crear Nueva Incidencia
+                <PlusCircle className="mr-2 h-5 w-5" /> Crear Nova Incidència
               </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[525px]">
               <DialogHeader>
-                <DialogTitle className="font-headline text-2xl">Crear Nueva Incidencia de Mantenimiento</DialogTitle>
+                <DialogTitle className="font-headline text-2xl">Crear Nova Incidència de Manteniment</DialogTitle>
                 <DialogDescription>
-                  Complete los detalles a continuación para informar un problema de mantenimiento.
+                  Completeu els detalls a continuació per informar d'un problema de manteniment.
                 </DialogDescription>
               </DialogHeader>
               <TicketForm 
                 onSubmit={addTicket} 
-                submitButtonText="Crear Incidencia" 
+                submitButtonText="Crear Incidència" 
                 />
             </DialogContent>
           </Dialog>
@@ -199,9 +198,9 @@ export default function HomePage() {
         }}>
           <DialogContent className="sm:max-w-[525px]">
             <DialogHeader>
-              <DialogTitle className="font-headline text-2xl">Editar Incidencia</DialogTitle>
+              <DialogTitle className="font-headline text-2xl">Editar Incidència</DialogTitle>
               <DialogDescription>
-                Modifique los detalles de la incidencia a continuación.
+                Modifiqueu els detalls de la incidència a continuació.
               </DialogDescription>
             </DialogHeader>
             {editingTicket && (
@@ -213,7 +212,7 @@ export default function HomePage() {
                   repairType: editingTicket.repairType,
                   importance: editingTicket.importance,
                 }}
-                submitButtonText="Guardar Cambios"
+                submitButtonText="Desar Canvis"
               />
             )}
           </DialogContent>

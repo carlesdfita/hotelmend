@@ -14,14 +14,14 @@ export default function TicketList({ tickets, onUpdateStatus, onEditTicket }: Ti
   if (tickets.length === 0) {
     return (
       <div className="text-center py-10">
-        <p className="text-xl text-muted-foreground">No se encontraron incidencias de mantenimiento.</p>
-        <p className="text-sm text-muted-foreground">Intente ajustar sus filtros o cree una nueva incidencia.</p>
+        <p className="text-xl text-muted-foreground">No s'han trobat incidències de manteniment.</p>
+        <p className="text-sm text-muted-foreground">Intenteu ajustar els filtres o creeu una nova incidència.</p>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col gap-4"> {/* Reduced gap from 6 to 4 for tighter packing */}
+    <div className="flex flex-col gap-4"> 
       {tickets.map((ticket) => (
         <TicketCard key={ticket.id} ticket={ticket} onUpdateStatus={onUpdateStatus} onEditTicket={onEditTicket} />
       ))}

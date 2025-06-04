@@ -1,12 +1,12 @@
 
 export type RepairType = string; 
-export const defaultRepairTypes: RepairType[] = ["Eléctrico", "Fontanería", "Carpintería", "Iluminación", "Climatización", "General"];
+export const defaultRepairTypes: RepairType[] = ["Elèctric", "Lampisteria", "Fusteria", "Il·luminació", "Climatització", "General"];
 
-export type TicketStatus = "Abierta" | "En Progreso" | "Cerrada";
-export const ticketStatuses: TicketStatus[] = ["Abierta", "En Progreso", "Cerrada"];
+export type TicketStatus = "Oberta" | "En Progrés" | "Tancada";
+export const ticketStatuses: TicketStatus[] = ["Oberta", "En Progrés", "Tancada"];
 
-export type ImportanceLevel = "Urgente" | "Importante" | "Poco Importante";
-export const importanceLevels: ImportanceLevel[] = ["Urgente", "Importante", "Poco Importante"];
+export type ImportanceLevel = "Urgent" | "Important" | "Poc Important";
+export const importanceLevels: ImportanceLevel[] = ["Urgent", "Important", "Poc Important"];
 
 export interface SuggestedTicket {
   ticketId: string;
@@ -19,7 +19,7 @@ export interface Ticket {
   location: string; 
   repairType: RepairType;
   status: TicketStatus;
-  importance: ImportanceLevel; // Nuevo campo
+  importance: ImportanceLevel;
   createdAt: Date;
   updatedAt: Date;
   suggestedTickets?: SuggestedTicket[];

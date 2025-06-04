@@ -43,7 +43,7 @@ export default function FilterControls({ filters, onFilterChange }: FilterContro
     if (storedLocations) {
       setAvailableLocations(JSON.parse(storedLocations));
     } else {
-        const defaultLocations = ["Recepción Vestíbulo", "Cocina Principal", "Gimnasio", "Piscina", "Habitación 305"];
+        const defaultLocations = ["Recepció Vestíbul", "Cuina Principal", "Gimnàs", "Piscina", "Habitació 305"];
         localStorage.setItem('locations', JSON.stringify(defaultLocations));
         setAvailableLocations(defaultLocations);
     }
@@ -53,14 +53,14 @@ export default function FilterControls({ filters, onFilterChange }: FilterContro
     onFilterChange({
       repairType: [],
       location: [],
-      status: ['Abierta', 'En Progreso'],
+      status: ['Oberta', 'En Progrés'],
       importance: [],
     });
   };
 
   const handleMultiSelectChange = (
     filterKey: keyof FilterControlsProps["filters"],
-    value: string // RepairType, Location, Status, or ImportanceLevel
+    value: string 
   ) => {
     const currentFilterValues = filters[filterKey] as string[];
     const newFilterValues = currentFilterValues.includes(value)
@@ -71,21 +71,21 @@ export default function FilterControls({ filters, onFilterChange }: FilterContro
   
   const getButtonText = (selectedItems: string[], allItems: readonly string[] | string[], defaultText: string, singularName: string, pluralName: string) => {
     if (selectedItems.length === 0) return defaultText;
-    if (selectedItems.length === allItems.length) return `Todos los ${pluralName}`;
+    if (selectedItems.length === allItems.length) return `Tots els ${pluralName}`;
     if (selectedItems.length === 1) return selectedItems[0];
-    return `${selectedItems.length} ${pluralName} seleccionados`;
+    return `${selectedItems.length} ${pluralName} seleccionats`;
   };
 
-  const locationButtonText = getButtonText(filters.location, availableLocations, "Todas las ubicaciones", "ubicación", "ubicaciones");
-  const repairTypeButtonText = getButtonText(filters.repairType, availableRepairTypes, "Todos los tipos", "tipo", "tipos");
-  const statusButtonText = getButtonText(filters.status, ticketStatuses, "Ningún estado", "estado", "estados");
-  const importanceButtonText = getButtonText(filters.importance, allImportanceLevels, "Toda importancia", "importancia", "importancias");
+  const locationButtonText = getButtonText(filters.location, availableLocations, "Totes les ubicacions", "ubicació", "ubicacions");
+  const repairTypeButtonText = getButtonText(filters.repairType, availableRepairTypes, "Tots els tipus", "tipus", "tipus");
+  const statusButtonText = getButtonText(filters.status, ticketStatuses, "Cap estat", "estat", "estats");
+  const importanceButtonText = getButtonText(filters.importance, allImportanceLevels, "Totes les importàncies", "importància", "importàncies");
 
   return (
     <Card className="mb-6 p-4">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 items-end">
         <div>
-          <Label htmlFor="filter-location-dropdown">Ubicación</Label>
+          <Label htmlFor="filter-location-dropdown">Ubicació</Label>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" id="filter-location-dropdown" className="w-full justify-between mt-1">
@@ -94,7 +94,7 @@ export default function FilterControls({ filters, onFilterChange }: FilterContro
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56">
-              <DropdownMenuLabel>Seleccionar Ubicaciones</DropdownMenuLabel>
+              <DropdownMenuLabel>Seleccionar Ubicacions</DropdownMenuLabel>
               <DropdownMenuSeparator />
               {availableLocations.map((loc) => (
                 <DropdownMenuCheckboxItem
@@ -110,7 +110,7 @@ export default function FilterControls({ filters, onFilterChange }: FilterContro
         </div>
 
         <div>
-          <Label htmlFor="filter-repair-type-dropdown">Tipo de Reparación</Label>
+          <Label htmlFor="filter-repair-type-dropdown">Tipus de Reparació</Label>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" id="filter-repair-type-dropdown" className="w-full justify-between mt-1">
@@ -119,7 +119,7 @@ export default function FilterControls({ filters, onFilterChange }: FilterContro
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56">
-              <DropdownMenuLabel>Seleccionar Tipos</DropdownMenuLabel>
+              <DropdownMenuLabel>Seleccionar Tipus</DropdownMenuLabel>
               <DropdownMenuSeparator />
               {availableRepairTypes.map((type) => (
                 <DropdownMenuCheckboxItem
@@ -135,7 +135,7 @@ export default function FilterControls({ filters, onFilterChange }: FilterContro
         </div>
 
         <div>
-          <Label htmlFor="filter-status-dropdown">Estado</Label>
+          <Label htmlFor="filter-status-dropdown">Estat</Label>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" id="filter-status-dropdown" className="w-full justify-between mt-1">
@@ -144,7 +144,7 @@ export default function FilterControls({ filters, onFilterChange }: FilterContro
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56">
-              <DropdownMenuLabel>Seleccionar Estados</DropdownMenuLabel>
+              <DropdownMenuLabel>Seleccionar Estats</DropdownMenuLabel>
               <DropdownMenuSeparator />
               {ticketStatuses.map((status) => (
                 <DropdownMenuCheckboxItem
@@ -160,7 +160,7 @@ export default function FilterControls({ filters, onFilterChange }: FilterContro
         </div>
         
         <div>
-          <Label htmlFor="filter-importance-dropdown">Importancia</Label>
+          <Label htmlFor="filter-importance-dropdown">Importància</Label>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" id="filter-importance-dropdown" className="w-full justify-between mt-1">
@@ -169,7 +169,7 @@ export default function FilterControls({ filters, onFilterChange }: FilterContro
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56">
-              <DropdownMenuLabel>Seleccionar Importancia</DropdownMenuLabel>
+              <DropdownMenuLabel>Seleccionar Importància</DropdownMenuLabel>
               <DropdownMenuSeparator />
               {allImportanceLevels.map((level) => (
                 <DropdownMenuCheckboxItem
@@ -184,7 +184,7 @@ export default function FilterControls({ filters, onFilterChange }: FilterContro
           </DropdownMenu>
         </div>
         <Button onClick={handleResetFilters} variant="outline" className="w-full lg:w-auto">
-          <X className="mr-2 h-4 w-4" /> Restablecer
+          <X className="mr-2 h-4 w-4" /> Restablir
         </Button>
       </div>
     </Card>

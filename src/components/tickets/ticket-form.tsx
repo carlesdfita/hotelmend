@@ -30,10 +30,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Loader2 } from "lucide-react";
 
 const ticketFormSchema = z.object({
-  description: z.string().min(10, { message: "La descripción debe tener al menos 10 caracteres." }),
-  location: z.string().min(1, { message: "La ubicación es obligatoria." }),
-  repairType: z.string().min(1, { message: "El tipo de reparación es obligatorio."}),
-  importance: z.enum(importanceLevels, { message: "La importancia es obligatoria."}),
+  description: z.string().min(10, { message: "La descripció ha de tenir almenys 10 caràcters." }),
+  location: z.string().min(1, { message: "La ubicació és obligatòria." }),
+  repairType: z.string().min(1, { message: "El tipus de reparació és obligatori."}),
+  importance: z.enum(importanceLevels, { message: "La importància és obligatòria."}),
 });
 
 export type TicketFormValues = z.infer<typeof ticketFormSchema>;
@@ -54,7 +54,7 @@ const debounce = <F extends (...args: any[]) => any>(func: F, delay: number) => 
   };
 };
 
-export default function TicketForm({ onSubmit, initialData, submitButtonText = "Crear Incidencia" }: TicketFormProps) {
+export default function TicketForm({ onSubmit, initialData, submitButtonText = "Crear Incidència" }: TicketFormProps) {
   const [availableRepairTypes, setAvailableRepairTypes] = useState<RepairType[]>(defaultRepairTypes);
   const [availableLocations, setAvailableLocations] = useState<string[]>([]);
   
@@ -74,13 +74,13 @@ export default function TicketForm({ onSubmit, initialData, submitButtonText = "
   
   const form = useForm<TicketFormValues>({
     resolver: zodResolver(ticketFormSchema),
-    defaultValues: initialData || { importance: "Importante" },
+    defaultValues: initialData || { importance: "Important" },
   });
   
   useEffect(() => {
     if (initialData && Object.keys(initialData).length > 0) {
       form.reset(initialData);
-      if (initialData.location && !availableLocations.includes(initialData.location) && initialData.location !== 'Otra') {
+      if (initialData.location && !availableLocations.includes(initialData.location) && initialData.location !== 'Altra') {
         setIsCustomLocationActive(true);
         setCustomLocationValue(initialData.location);
       } else {
@@ -92,7 +92,7 @@ export default function TicketForm({ onSubmit, initialData, submitButtonText = "
         description: "",
         location: availableLocations.length > 0 ? availableLocations[0] : "",
         repairType: availableRepairTypes.length > 0 ? availableRepairTypes[0] : "General",
-        importance: "Importante", // Default importance for new tickets
+        importance: "Important",
       });
       setIsCustomLocationActive(false);
       setCustomLocationValue("");
@@ -130,14 +130,14 @@ export default function TicketForm({ onSubmit, initialData, submitButtonText = "
   
   function handleSubmit(data: TicketFormValues) {
     let finalData = { ...data };
-    if (data.location === 'Otra' && isCustomLocationActive) {
+    if (data.location === 'Altra' && isCustomLocationActive) {
       if (customLocationValue.trim() === "") {
-        form.setError("location", {type: "manual", message: "Especifique la ubicación personalizada o seleccione una existente."});
+        form.setError("location", {type: "manual", message: "Especifiqueu la ubicació personalitzada o seleccioneu-ne una d'existent."});
         return;
       }
       finalData.location = customLocationValue.trim();
-    } else if (data.location === 'Otra' && !isCustomLocationActive) {
-       form.setError("location", {type: "manual", message: "Seleccione 'Otra' y especifique la ubicación."});
+    } else if (data.location === 'Altra' && !isCustomLocationActive) {
+       form.setError("location", {type: "manual", message: "Seleccioneu 'Altra' i especifiqueu la ubicació."});
        return;
     }
     
@@ -157,10 +157,10 @@ export default function TicketForm({ onSubmit, initialData, submitButtonText = "
           name="description"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Descripción</FormLabel>
+              <FormLabel>Descripció</FormLabel>
               <FormControl>
                 <Textarea
-                  placeholder="Describa el problema en detalle (ej: 'El grifo de la habitación 203 gotea')"
+                  placeholder="Descriviu el problema en detall (ex: 'L'aixeta de l'habitació 203 degota')"
                   {...field}
                   onChange={handleDescriptionChange} 
                   rows={4}
@@ -174,20 +174,20 @@ export default function TicketForm({ onSubmit, initialData, submitButtonText = "
         {isLoadingSuggestions && (
           <div className="flex items-center text-sm text-muted-foreground">
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            Cargando sugerencias...
+            Carregant suggeriments...
           </div>
         )}
 
         {suggestedTickets.length > 0 && !isLoadingSuggestions && (
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">Incidencias Anteriores Sugeridas</CardTitle>
-              <CardDescription>Estas incidencias anteriores podrían estar relacionadas con su problema:</CardDescription>
+              <CardTitle className="text-lg">Incidències Anteriors Suggerides</CardTitle>
+              <CardDescription>Aquestes incidències anteriors podrien estar relacionades amb el vostre problema:</CardDescription>
             </CardHeader>
             <CardContent className="space-y-2 max-h-48 overflow-y-auto">
               {suggestedTickets.map((ticket) => (
                 <div key={ticket.ticketId} className="text-sm p-2 border rounded-md bg-muted/50">
-                  <p className="font-medium">ID de Incidencia: {ticket.ticketId}</p>
+                  <p className="font-medium">ID d'Incidència: {ticket.ticketId}</p>
                   <p className="text-muted-foreground">{ticket.description}</p>
                 </div>
               ))}
@@ -200,14 +200,14 @@ export default function TicketForm({ onSubmit, initialData, submitButtonText = "
           name="location"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Área / Número de Habitación</FormLabel>
+              <FormLabel>Àrea / Número d'Habitació</FormLabel>
               {availableLocations.length > 0 ? (
                 <Select 
                   onValueChange={(value) => {
                     field.onChange(value);
-                    if (value === 'Otra') {
+                    if (value === 'Altra') {
                       setIsCustomLocationActive(true);
-                      if (initialData?.location && !availableLocations.includes(initialData.location) && value === 'Otra') {
+                      if (initialData?.location && !availableLocations.includes(initialData.location) && value === 'Altra') {
                          setCustomLocationValue(initialData.location);
                       } else {
                          setCustomLocationValue('');
@@ -221,7 +221,7 @@ export default function TicketForm({ onSubmit, initialData, submitButtonText = "
                 >
                   <FormControl>
                     <SelectTrigger>
-                      <SelectValue placeholder="Seleccionar ubicación predefinida" />
+                      <SelectValue placeholder="Seleccionar ubicació predefinida" />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
@@ -230,13 +230,13 @@ export default function TicketForm({ onSubmit, initialData, submitButtonText = "
                         {loc}
                       </SelectItem>
                     ))}
-                     <SelectItem value="Otra">Otra (especificar)</SelectItem>
+                     <SelectItem value="Altra">Altra (especificar)</SelectItem>
                   </SelectContent>
                 </Select>
               ) : (
                 <FormControl>
                   <Input 
-                    placeholder="ej: Habitación 101, Vestíbulo, Cocina" 
+                    placeholder="ex: Habitació 101, Vestíbul, Cuina" 
                     {...field} 
                     onChange={(e) => {
                         field.onChange(e.target.value);
@@ -249,7 +249,7 @@ export default function TicketForm({ onSubmit, initialData, submitButtonText = "
               {isCustomLocationActive && availableLocations.length > 0 && (
                  <FormControl>
                     <Input 
-                        placeholder="Especificar otra ubicación" 
+                        placeholder="Especificar una altra ubicació" 
                         value={customLocationValue}
                         onChange={(e) => setCustomLocationValue(e.target.value)}
                         className="mt-2"
@@ -258,10 +258,10 @@ export default function TicketForm({ onSubmit, initialData, submitButtonText = "
               )}
                {!availableLocations.length && (
                   <Input
-                    placeholder="ej: Habitación 101, Vestíbulo, Cocina"
+                    placeholder="ex: Habitació 101, Vestíbul, Cuina"
                     value={field.value}
                     onChange={(e) => field.onChange(e.target.value)}
-                    className="hidden"
+                    className="hidden" 
                   />
                 )}
               <FormMessage />
@@ -274,11 +274,11 @@ export default function TicketForm({ onSubmit, initialData, submitButtonText = "
           name="repairType"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Tipo de Reparación</FormLabel>
+              <FormLabel>Tipus de Reparació</FormLabel>
               <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
                 <FormControl>
                   <SelectTrigger>
-                    <SelectValue placeholder="Seleccionar tipo de reparación" />
+                    <SelectValue placeholder="Seleccionar tipus de reparació" />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
@@ -299,11 +299,11 @@ export default function TicketForm({ onSubmit, initialData, submitButtonText = "
           name="importance"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Importancia</FormLabel>
+              <FormLabel>Importància</FormLabel>
               <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
                 <FormControl>
                   <SelectTrigger>
-                    <SelectValue placeholder="Seleccionar nivel de importancia" />
+                    <SelectValue placeholder="Seleccionar nivell d'importància" />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>

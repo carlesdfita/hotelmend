@@ -1,3 +1,4 @@
+
 import AppHeader from '@/components/layout/app-header';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -16,14 +17,14 @@ export default function SettingsLayout({
           <Button variant="outline" asChild>
             <Link href="/">
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Volver a Incidencias
+              Tornar a Incidències
             </Link>
           </Button>
         </div>
         {children}
       </main>
       <footer className="text-center p-6 text-muted-foreground text-sm border-t">
-        HotelMend &copy; {new Date().getFullYear()} - Configuración
+        HotelMend &copy; {new Date().getFullYear()} - Configuració
       </footer>
     </div>
   );

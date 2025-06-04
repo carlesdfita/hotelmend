@@ -1,27 +1,28 @@
+
 'use server';
 
 /**
- * @fileOverview A flow to suggest related past tickets based on the current ticket's description.
+ * @fileOverview Un flux per suggerir incidències anteriors relacionades basant-se en la descripció de la incidència actual.
  *
- * - suggestRelatedTickets - A function that suggests related tickets.
- * - SuggestRelatedTicketsInput - The input type for the suggestRelatedTickets function.
- * - SuggestRelatedTicketsOutput - The return type for the suggestRelatedTickets function.
+ * - suggestRelatedTickets - Una funció que suggereix incidències relacionades.
+ * - SuggestRelatedTicketsInput - El tipus d'entrada per a la funció suggestRelatedTickets.
+ * - SuggestRelatedTicketsOutput - El tipus de retorn per a la funció suggestRelatedTickets.
  */
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
 const SuggestRelatedTicketsInputSchema = z.object({
-  description: z.string().describe('La descripción de la incidencia de mantenimiento.'),
+  description: z.string().describe('La descripció de la incidència de manteniment.'),
 });
 export type SuggestRelatedTicketsInput = z.infer<typeof SuggestRelatedTicketsInputSchema>;
 
 const SuggestRelatedTicketsOutputSchema = z.array(
   z.object({
-    ticketId: z.string().describe('El ID de la incidencia relacionada.'),
-    description: z.string().describe('La descripción de la incidencia relacionada.'),
+    ticketId: z.string().describe("L'ID de la incidència relacionada."),
+    description: z.string().describe('La descripció de la incidència relacionada.'),
   })
-).describe('Una lista de incidencias relacionadas.');
+).describe("Una llista d'incidències relacionades.");
 export type SuggestRelatedTicketsOutput = z.infer<typeof SuggestRelatedTicketsOutputSchema>;
 
 export async function suggestRelatedTickets(input: SuggestRelatedTicketsInput): Promise<SuggestRelatedTicketsOutput> {
@@ -30,14 +31,14 @@ export async function suggestRelatedTickets(input: SuggestRelatedTicketsInput): 
 
 const searchTickets = ai.defineTool({
   name: 'searchTickets',
-  description: 'Buscar incidencias de mantenimiento existentes basadas en palabras clave.',
+  description: 'Cercar incidències de manteniment existents basant-se en paraules clau.',
   inputSchema: z.object({
-    keywords: z.string().describe('Palabras clave para buscar en incidencias existentes.'),
+    keywords: z.string().describe('Paraules clau per cercar en incidències existents.'),
   }),
   outputSchema: z.array(
     z.object({
-      ticketId: z.string().describe('El ID de la incidencia encontrada.'),
-      description: z.string().describe('La descripción de la incidencia encontrada.'),
+      ticketId: z.string().describe("L'ID de la incidència trobada."),
+      description: z.string().describe('La descripció de la incidència trobada.'),
     })
   ),
 },
@@ -46,8 +47,8 @@ async (input) => {
   // For now, return some dummy data.
   await new Promise(resolve => setTimeout(resolve, 500));
   return [
-    {ticketId: '123', description: 'Ejemplo de incidencia relacionada 1.'},
-    {ticketId: '456', description: 'Ejemplo de incidencia relacionada 2.'},
+    {ticketId: '123', description: "Exemple d'incidència relacionada 1."},
+    {ticketId: '456', description: "Exemple d'incidència relacionada 2."},
   ];
 });
 
@@ -56,7 +57,7 @@ const prompt = ai.definePrompt({
   input: {schema: SuggestRelatedTicketsInputSchema},
   output: {schema: SuggestRelatedTicketsOutputSchema},
   tools: [searchTickets],
-  prompt: `Basándose en la siguiente descripción de la incidencia de mantenimiento, sugiera incidencias relacionadas utilizando la herramienta searchTickets para encontrar incidencias anteriores relevantes.\n\nDescripción de la Incidencia: {{{description}}}`,
+  prompt: `Basant-se en la següent descripció de la incidència de manteniment, suggeriu incidències relacionades utilitzant l'eina searchTickets per trobar incidències anteriors rellevants.\n\nDescripció de la Incidència: {{{description}}}`,
 });
 
 const suggestRelatedTicketsFlow = ai.defineFlow(

@@ -1,3 +1,4 @@
+
 import { Hotel, Settings } from 'lucide-react';
 import Link from 'next/link';
 import {
@@ -23,17 +24,17 @@ export default function AppHeader() {
           <DropdownMenuTrigger asChild>
             <Button variant="outline" size="icon">
               <Settings className="h-5 w-5" />
-              <span className="sr-only">Abrir menú de configuración</span>
+              <span className="sr-only">Obrir menú de configuració</span>
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Configuración</DropdownMenuLabel>
+            <DropdownMenuLabel>Configuració</DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
-              <Link href="/settings/repair-types">Configurar Tipologías</Link>
+              <Link href="/settings/repair-types">Configurar Tipologies</Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
-              <Link href="/settings/locations">Configurar Ubicaciones</Link>
+              <Link href="/settings/locations">Configurar Ubicacions</Link>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

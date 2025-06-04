@@ -19,12 +19,12 @@ import {
   Lightbulb,
   Wind,
   ClipboardList,
-  CircleAlert, // Status: Abierta
-  CircleDotDashed, // Status: En Progreso
-  CheckCircle2, // Status: Cerrada
-  AlertTriangle, // Importance: Urgente
-  ShieldAlert, // Importance: Importante (icono)
-  ChevronDownCircle, // Importance: Poco Importante
+  CircleAlert, 
+  CircleDotDashed, 
+  CheckCircle2, 
+  AlertTriangle, 
+  ShieldAlert, 
+  ChevronDownCircle, 
   CalendarDays,
   MapPin,
   Construction, 
@@ -47,24 +47,24 @@ interface TicketCardProps {
 }
 
 const repairTypeIcons: Record<string, React.ElementType> = {
-  "Eléctrico": Zap,
-  "Fontanería": Wrench,
-  "Carpintería": Hammer,
-  "Iluminación": Lightbulb,
-  "Climatización": Wind,
+  "Elèctric": Zap,
+  "Lampisteria": Wrench,
+  "Fusteria": Hammer,
+  "Il·luminació": Lightbulb,
+  "Climatització": Wind,
   "General": ClipboardList,
 };
 
 const statusInfo: Record<TicketStatus, { icon: React.ElementType; variant: "default" | "secondary" | "destructive" | "outline" | "success" | "warning" | "attention" | null | undefined }> = {
-  "Abierta": { icon: CircleAlert, variant: "destructive" }, // Rojo
-  "En Progreso": { icon: CircleDotDashed, variant: "warning" }, // Amarillo
-  "Cerrada": { icon: CheckCircle2, variant: "success" }, // Verde (accent color)
+  "Oberta": { icon: CircleAlert, variant: "destructive" }, 
+  "En Progrés": { icon: CircleDotDashed, variant: "warning" }, 
+  "Tancada": { icon: CheckCircle2, variant: "success" }, 
 };
 
 const importanceInfo: Record<ImportanceLevel, { icon: React.ElementType; variant: "default" | "secondary" | "destructive" | "outline" | "success" | "warning" | "attention" | null | undefined; label: string }> = {
-  "Urgente": { icon: AlertTriangle, variant: "destructive", label: "Urgente" }, // Rojo
-  "Importante": { icon: ShieldAlert, variant: "warning", label: "Importante" }, // Amarillo
-  "Poco Importante": { icon: ChevronDownCircle, variant: "default", label: "Poco Imp." }, // Azul primario
+  "Urgent": { icon: AlertTriangle, variant: "destructive", label: "Urgent" }, 
+  "Important": { icon: ShieldAlert, variant: "warning", label: "Important" }, 
+  "Poc Important": { icon: ChevronDownCircle, variant: "default", label: "Poc Imp." }, 
 };
 
 
@@ -112,28 +112,28 @@ export default function TicketCard({ ticket, onUpdateStatus, onEditTicket }: Tic
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon" className="h-7 w-7">
                 <MoreVertical className="h-4 w-4" />
-                <span className="sr-only">Más opciones</span>
+                <span className="sr-only">Més opcions</span>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem onClick={() => onEditTicket(ticket)} className="text-sm">
                 <Edit3 className="mr-2 h-3.5 w-3.5" />
-                Editar Incidencia
+                Editar Incidència
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              {ticket.status !== "En Progreso" && ticket.status !== "Cerrada" && (
-                <DropdownMenuItem onClick={() => handleStatusChange("En Progreso")} className="text-sm">
-                  Marcar En Progreso
+              {ticket.status !== "En Progrés" && ticket.status !== "Tancada" && (
+                <DropdownMenuItem onClick={() => handleStatusChange("En Progrés")} className="text-sm">
+                  Marcar En Progrés
                 </DropdownMenuItem>
               )}
-              {ticket.status !== "Cerrada" && (
-                 <DropdownMenuItem onClick={() => handleStatusChange("Cerrada")} className="text-sm">
-                   Marcar Completa
+              {ticket.status !== "Tancada" && (
+                 <DropdownMenuItem onClick={() => handleStatusChange("Tancada")} className="text-sm">
+                   Marcar Com Completa
                  </DropdownMenuItem>
               )}
-               {ticket.status === "Cerrada" && ticket.status !== "Abierta" && (
-                 <DropdownMenuItem onClick={() => handleStatusChange("Abierta")} className="text-sm">
-                   Reabrir Incidencia
+               {ticket.status === "Tancada" && ticket.status !== "Oberta" && (
+                 <DropdownMenuItem onClick={() => handleStatusChange("Oberta")} className="text-sm">
+                   Reobrir Incidència
                  </DropdownMenuItem>
               )}
             </DropdownMenuContent>
