@@ -20,7 +20,9 @@ export default function AppHeader() {
   const { toast } = useToast();
 
   const handleLogout = () => {
+    // Eliminar ambos flags para asegurar un logout completo
     localStorage.removeItem('isAuthenticated');
+    localStorage.removeItem('isSuperAdminAuthenticated'); 
     toast({
       title: "Sessió Tancada",
       description: "Has tancat la sessió correctament.",
