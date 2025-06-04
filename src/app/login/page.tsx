@@ -128,7 +128,7 @@ export default function LoginPage() {
           </form>
         </CardContent>
         <CardFooter className="text-center text-xs text-muted-foreground">
-          <p>Introdueix la contrasenya per accedir. (Ex: admin123 o una generada)</p>
+          <p>Introdueix la contrasenya per accedir.</p>
         </CardFooter>
       </Card>
       <footer className="text-center p-6 text-muted-foreground text-sm mt-8">
