@@ -1,0 +1,28 @@
+"use client";
+
+import type { Ticket, TicketStatus } from "@/lib/types";
+import TicketCard from "./ticket-card";
+
+interface TicketListProps {
+  tickets: Ticket[];
+  onUpdateStatus: (ticketId: string, newStatus: TicketStatus) => void;
+}
+
+export default function TicketList({ tickets, onUpdateStatus }: TicketListProps) {
+  if (tickets.length === 0) {
+    return (
+      <div className="text-center py-10">
+        <p className="text-xl text-muted-foreground">No maintenance tickets found.</p>
+        <p className="text-sm text-muted-foreground">Try adjusting your filters or create a new ticket.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {tickets.map((ticket) => (
+        <TicketCard key={ticket.id} ticket={ticket} onUpdateStatus={onUpdateStatus} />
+      ))}
+    </div>
+  );
+}
