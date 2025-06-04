@@ -64,7 +64,7 @@ const statusInfo: Record<TicketStatus, { icon: React.ElementType; variant: "defa
 const importanceInfo: Record<ImportanceLevel, { icon: React.ElementType; variant: "default" | "secondary" | "destructive" | "outline" | "success" | "warning" | "attention" | null | undefined; label: string }> = {
   "Urgente": { icon: AlertTriangle, variant: "destructive", label: "Urgente" }, // Rojo
   "Importante": { icon: ShieldAlert, variant: "warning", label: "Importante" }, // Amarillo
-  "Poco Importante": { icon: ChevronDownCircle, variant: "warning", label: "Poco Imp." }, // Amarillo
+  "Poco Importante": { icon: ChevronDownCircle, variant: "default", label: "Poco Imp." }, // Azul primario
 };
 
 
