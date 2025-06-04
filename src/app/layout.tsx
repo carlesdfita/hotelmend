@@ -1,9 +1,10 @@
+
 import type { Metadata } from 'next';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 
 export const metadata: Metadata = {
-  title: 'HotelMend', // Brand name, kept as is.
+  title: 'HotelMend',
   description: 'CMMS per a Petits Hotels',
 };
 
