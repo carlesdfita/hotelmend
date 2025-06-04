@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect } from 'react';
@@ -8,7 +9,7 @@ import { PlusCircle, Trash2 } from 'lucide-react';
 import type { RepairType } from '@/lib/types';
 import { useToast } from "@/hooks/use-toast";
 
-// Simulate fetching initial data or use a default set
+// Default repair types, can be overridden or extended via settings page
 const initialRepairTypes: RepairType[] = ["Eléctrico", "Fontanería", "Carpintería", "Iluminación", "Climatización", "General"];
 
 export default function RepairTypesPage() {
@@ -17,7 +18,6 @@ export default function RepairTypesPage() {
   const { toast } = useToast();
 
   useEffect(() => {
-    // In a real app, you might fetch this from a DB or localStorage
     const storedRepairTypes = localStorage.getItem('repairTypes');
     if (storedRepairTypes) {
       setRepairTypes(JSON.parse(storedRepairTypes));
@@ -36,7 +36,7 @@ export default function RepairTypesPage() {
       });
       return;
     }
-    if (repairTypes.includes(newRepairType.trim() as RepairType)) {
+    if (repairTypes.map(rt => rt.toLowerCase()).includes(newRepairType.trim().toLowerCase())) {
        toast({
         title: "Error",
         description: "Esta tipología ya existe.",
@@ -55,14 +55,6 @@ export default function RepairTypesPage() {
   };
 
   const handleDeleteRepairType = (typeToDelete: RepairType) => {
-    if (initialRepairTypes.includes(typeToDelete)) {
-      toast({
-        title: "Acción no permitida",
-        description: `La tipología "${typeToDelete}" es una tipología base y no se puede eliminar.`,
-        variant: "destructive",
-      });
-      return;
-    }
     const updatedRepairTypes = repairTypes.filter(type => type !== typeToDelete);
     setRepairTypes(updatedRepairTypes);
     localStorage.setItem('repairTypes', JSON.stringify(updatedRepairTypes));
@@ -104,11 +96,9 @@ export default function RepairTypesPage() {
               {repairTypes.map((type) => (
                 <li key={type} className="flex items-center justify-between p-3 bg-muted/50 rounded-md">
                   <span className="font-medium">{type}</span>
-                  {!initialRepairTypes.includes(type) && (
-                     <Button variant="ghost" size="sm" onClick={() => handleDeleteRepairType(type)} aria-label={`Eliminar ${type}`}>
-                      <Trash2 className="h-4 w-4 text-destructive" />
-                    </Button>
-                  )}
+                  <Button variant="ghost" size="sm" onClick={() => handleDeleteRepairType(type)} aria-label={`Eliminar ${type}`}>
+                    <Trash2 className="h-4 w-4 text-destructive" />
+                  </Button>
                 </li>
               ))}
             </ul>
