@@ -1,4 +1,3 @@
-
 "use client";
 
 import {
@@ -40,6 +39,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import React from "react";
+import { cn } from "@/lib/utils"; // Import cn helper
 
 interface TicketCardProps {
   ticket: Ticket;
@@ -88,14 +88,32 @@ export default function TicketCard({ ticket, onUpdateStatus, onEditTicket, onDel
       }
   };
 
+  const importanceBackgroundColor = () => {
+    switch (ticket.importance) {
+      case "Urgent":
+        return "bg-red-100";
+      case "Important":
+        return "bg-yellow-100";
+      case "Poc Important":
+        return "bg-blue-100";
+      default:
+        return ""; // No background color for other cases
+    }
+  };
+
   return (
-    <Card className="w-full shadow-md hover:shadow-lg transition-shadow duration-200 flex flex-col sm:flex-row">
+    <Card className={cn(
+      "w-full shadow-md hover:shadow-lg transition-shadow duration-200 flex flex-col sm:flex-row",
+      importanceBackgroundColor()
+      )}>
       <div className="flex-grow p-3 pr-2">
         <div className="flex justify-between items-start mb-1">
-            <CardTitle className="text-sm font-headline flex items-center">
-              <RepairIcon className="mr-1.5 h-3.5 w-3.5 text-primary" />
-              {ticket.repairType}
+            {/* Localització a dalt en negreta */}
+            <CardTitle className="text-sm font-headline flex items-center font-bold">
+              <MapPin className="mr-1.5 h-3.5 w-3.5 text-primary" />
+              {ticket.location}
             </CardTitle>
+            {/* Badges a dalt a la dreta */}
             <div className="flex items-center gap-1.5">
               <Badge variant={importanceInfo[ticket.importance].variant || 'default'} className="text-xs px-1.5 py-0.5 h-[18px] leading-tight">
                 <ImportanceIcon className="mr-1 h-2.5 w-2.5" />
@@ -107,17 +125,25 @@ export default function TicketCard({ ticket, onUpdateStatus, onEditTicket, onDel
               </Badge>
             </div>
         </div>
-        <p className="text-xs text-foreground leading-snug line-clamp-2 mb-1 sm:mb-1.5">{ticket.description}</p>
+        {/* Descripció de la incidència amb icona */}
+        <div className="flex items-start mb-1 sm:mb-1.5">
+            <ClipboardList className="mr-1.5 h-3.5 w-3.5 text-muted-foreground" />
+            <p className="text-xs text-foreground leading-snug line-clamp-2">{ticket.description}</p>
+        </div>
+        {/* Tipologia i Data a baix */}
         <div className="flex justify-between items-center text-xs text-muted-foreground">
-            <div className="flex items-center">
-              <MapPin className="mr-1 h-3 w-3" /> {ticket.location}
+            {/* Tipologia de reparació a baix en gris */}
+            <div className="flex items-center text-gray-500">
+              <RepairIcon className="mr-1 h-3 w-3" /> {ticket.repairType}
             </div>
+            {/* Data de creació a baix a la dreta */}
             <div className="flex items-center">
               <CalendarDays className="mr-1 h-3 w-3" />
               <span>{new Date(ticket.createdAt).toLocaleDateString()}</span>
             </div>
         </div>
       </div>
+      {/* Menú d'opcions */}
       <div className="flex-shrink-0 p-2 sm:border-l sm:pl-2 flex items-center justify-center">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>

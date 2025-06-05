@@ -18,6 +18,13 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  webpack: (config, { isServer }) => {
+    config.module.rules.push({
+      test: /\. (hbs|handlebars)$/,
+      loader: 'handlebars-loader',
+    });
+    return config;
+  },
 };
 
 export default nextConfig;

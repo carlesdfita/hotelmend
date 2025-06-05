@@ -3,12 +3,7 @@
 # dependencies
 /node_modules
 /.pnp
-.pnp.*
-.yarn/*
-!.yarn/patches
-!.yarn/plugins
-!.yarn/releases
-!.yarn/versions
+.pnp.js
 
 # testing
 /coverage
@@ -22,24 +17,18 @@
 
 # misc
 .DS_Store
-*.pem
-
-# debug
-npm-debug.log*
+*.less
+*.sass
+*.scss
+pm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
-
-# vercel
-.vercel
-
-# typescript
-*.tsbuildinfo
-next-env.d.ts
-
-.genkit/*
-.env*
+.env*.local
+.vercel/
+vercel-debug.log*
 
 # firebase
+.firebase/
 firebase-debug.log
-firestore-debug.log
+
