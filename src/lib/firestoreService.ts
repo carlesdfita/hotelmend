@@ -1,6 +1,6 @@
 // src/lib/firestoreService.ts
 import { initializeApp, getApps, getApp } from 'firebase/app';
-import { getFirestore, collection, getDocs, addDoc, query, orderBy, doc, getDoc, updateDoc, deleteDoc } from 'firebase/firestore';
+import { getFirestore, collection, getDocs, addDoc, query, orderBy, doc, getDoc, updateDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
 // Assume firebaseConfig is defined here or in a similar file - YOU NEED TO CREATE THIS FILE
 import { firebaseConfig } from './firebaseConfig';
 import { Ticket } from './types'; // Import the Ticket type
@@ -16,6 +16,12 @@ const TICKETS_COLLECTION = 'tickets'; // Define the name of the Firestore collec
 // Noves constants per a les col·leccions de localitzacions i tipologies
 const LOCATIONS_COLLECTION = 'locations';
 const REPAIR_TYPES_COLLECTION = 'repairTypes';
+
+// Tipus per a Localitzacions i Tipologies amb ID de Firestore
+interface FirestoreItem {
+  id: string;
+  name: string;
+}
 
 // Function to get all tickets from Firestore
 export async function getTicketsFromFirestore(): Promise<Ticket[]> {
@@ -49,19 +55,16 @@ export async function getTicketsFromFirestore(): Promise<Ticket[]> {
 // Pass the ticket data, Firestore will generate the ID
 export async function addTicketToFirestore(ticketData: Omit<Ticket, 'id' | 'createdAt' | 'updatedat'>): Promise<string> {
     const ticketsCollection = collection(db, TICKETS_COLLECTION);
-    const now = new Date();
     const docRef = await addDoc(ticketsCollection, {
       ...ticketData,
-      createdAt: now,
-      updatedAt: now,
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
       suggestedTickets: ticketData.suggestedTickets || [],
     });
     return docRef.id;
   }
 
-// --- Potencials funcions addicionals per a Tiquets (les hem afegit més tard si cal) ---
-
-// Function to get a single ticket by ID
+// Function to get a single ticket by ID (descomentada per si cal)
 /*
 export async function getTicketByIdFromFirestore(ticketId: string): Promise<Ticket | null> {
   const ticketDoc = doc(db, TICKETS_COLLECTION, ticketId);
@@ -90,10 +93,9 @@ export async function getTicketByIdFromFirestore(ticketId: string): Promise<Tick
 // Function to update a ticket
 export async function updateTicketInFirestore(ticketId: string, updates: Partial<Omit<Ticket, 'id' | 'createdAt'>>): Promise<void> {
   const ticketDoc = doc(db, TICKETS_COLLECTION, ticketId);
-   const now = new Date();
    await updateDoc(ticketDoc, {
     ...updates,
-    updatedAt: now,
+    updatedAt: serverTimestamp(),
    });
 }
 
@@ -105,39 +107,77 @@ export async function deleteTicketFromFirestore(ticketId: string): Promise<void>
 }
 
 
-// --- Fi de les potencials funcions addicionals per a Tiquets ---
+// --- Funcions per a Localitzacions (CRUD) ---
 
-
-// --- Noves funcions per obtenir Localitzacions i Tipologies de Firestore ---
-
-// Function to get all locations from Firestore
-// Assumim que cada document a la col·lecció 'locations' té un camp 'name' (string)
-export async function getLocationsFromFirestore(): Promise<string[]> {
+// Function to get all locations from Firestore (retorna ID i nom)
+export async function getLocationsFromFirestore(): Promise<FirestoreItem[]> {
   const locationsCollection = collection(db, LOCATIONS_COLLECTION);
   const querySnapshot = await getDocs(locationsCollection);
-  const locations: string[] = [];
+  const locations: FirestoreItem[] = [];
   querySnapshot.forEach((doc) => {
     const data = doc.data();
     if (data && typeof data.name === 'string') {
-      locations.push(data.name);
+      locations.push({ id: doc.id, name: data.name });
     }
   });
+   // Optional: ordenar per nom
+   locations.sort((a, b) => a.name.localeCompare(b.name));
   return locations;
 }
 
-// Function to get all repair types from Firestore
-// Assumim que cada document a la col·lecció 'repairTypes' té un camp 'name' (string)
-export async function getRepairTypesFromFirestore(): Promise<string[]> {
+// Function to add a new location to Firestore
+export async function addLocationToFirestore(name: string): Promise<string> {
+    const locationsCollection = collection(db, LOCATIONS_COLLECTION);
+    const docRef = await addDoc(locationsCollection, { name });
+    return docRef.id;
+}
+
+// Function to update a location in Firestore
+export async function updateLocationInFirestore(id: string, newName: string): Promise<void> {
+    const locationDoc = doc(db, LOCATIONS_COLLECTION, id);
+    await updateDoc(locationDoc, { name: newName });
+}
+
+// Function to delete a location from Firestore
+export async function deleteLocationFromFirestore(id: string): Promise<void> {
+    const locationDoc = doc(db, LOCATIONS_COLLECTION, id);
+    await deleteDoc(locationDoc);
+}
+
+
+// --- Funcions per a Tipologies de Reparació (CRUD) ---
+
+// Function to get all repair types from Firestore (retorna ID i nom)
+export async function getRepairTypesFromFirestore(): Promise<FirestoreItem[]> {
   const repairTypesCollection = collection(db, REPAIR_TYPES_COLLECTION);
   const querySnapshot = await getDocs(repairTypesCollection);
-  const repairTypes: string[] = [];
+  const repairTypes: FirestoreItem[] = [];
   querySnapshot.forEach((doc) => {
     const data = doc.data();
     if (data && typeof data.name === 'string') {
-      repairTypes.push(data.name);
+      repairTypes.push({ id: doc.id, name: data.name });
     }
   });
+   // Optional: ordenar per nom
+   repairTypes.sort((a, b) => a.name.localeCompare(b.name));
   return repairTypes;
 }
 
-// --- Fi de les noves funcions ---
+// Function to add a new repair type to Firestore
+export async function addRepairTypeToFirestore(name: string): Promise<string> {
+    const repairTypesCollection = collection(db, REPAIR_TYPES_COLLECTION);
+    const docRef = await addDoc(repairTypesCollection, { name });
+    return docRef.id;
+}
+
+// Function to update a repair type in Firestore
+export async function updateRepairTypeInFirestore(id: string, newName: string): Promise<void> {
+    const repairTypeDoc = doc(db, REPAIR_TYPES_COLLECTION, id);
+    await updateDoc(repairTypeDoc, { name: newName });
+}
+
+// Function to delete a repair type from Firestore
+export async function deleteRepairTypeFromFirestore(id: string): Promise<void> {
+    const repairTypeDoc = doc(db, REPAIR_TYPES_COLLECTION, id);
+    await deleteDoc(repairTypeDoc);
+}

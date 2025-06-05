@@ -10,44 +10,38 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import type { RepairType, TicketStatus, ImportanceLevel } from "@/lib/types";
-import { defaultRepairTypes, ticketStatuses, importanceLevels as allImportanceLevels } from "@/lib/types";
+import { ticketStatuses, importanceLevels as allImportanceLevels } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { X, ListFilter } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import React, { useState, useEffect } from 'react';
+import React from 'react'; // Ja no necessitem useState ni useEffect per carregar des de localstorage
 
+// Definim el tipus per als items de Firestore (Localització o Tipologia amb ID)
+interface FirestoreItem {
+  id: string;
+  name: string;
+}
 
 interface FilterControlsProps {
   filters: {
-    repairType: RepairType[];
-    location: string[];
+    repairType: string[]; // L'estat dels filtres segueix guardant només el nom
+    location: string[]; // L'estat dels filtres segueix guardant només el nom
     status: TicketStatus[];
     importance: ImportanceLevel[];
   };
   onFilterChange: (filters: FilterControlsProps["filters"]) => void;
+  // Afegim props per a les llistes que venen de Firestore
+  locations: FirestoreItem[];
+  repairTypes: FirestoreItem[];
 }
 
-export default function FilterControls({ filters, onFilterChange }: FilterControlsProps) {
-  const [availableRepairTypes, setAvailableRepairTypes] = useState<RepairType[]>(defaultRepairTypes);
-  const [availableLocations, setAvailableLocations] = useState<string[]>([]);
-
-  useEffect(() => {
-    const storedRepairTypes = localStorage.getItem('repairTypes');
-    if (storedRepairTypes) {
-      setAvailableRepairTypes(JSON.parse(storedRepairTypes));
-    } else {
-        localStorage.setItem('repairTypes', JSON.stringify(defaultRepairTypes));
-    }
-    const storedLocations = localStorage.getItem('locations');
-    if (storedLocations) {
-      setAvailableLocations(JSON.parse(storedLocations));
-    } else {
-        const defaultLocations = ["Recepció Vestíbul", "Cuina Principal", "Gimnàs", "Piscina", "Habitació 305"];
-        localStorage.setItem('locations', JSON.stringify(defaultLocations));
-        setAvailableLocations(defaultLocations);
-    }
-  }, []);
+// Rebem locations i repairTypes com a props
+export default function FilterControls({ filters, onFilterChange, locations, repairTypes }: FilterControlsProps) {
+  // Eliminem els estats locals i l'useEffect de localStorage
+  // const [availableRepairTypes, setAvailableRepairTypes] = useState<RepairType[]>(defaultRepairTypes);
+  // const [availableLocations, setAvailableLocations] = useState<string[]>([]);
+  // useEffect(() => { ... }, []);
   
   const handleResetFilters = () => {
     onFilterChange({
@@ -60,7 +54,7 @@ export default function FilterControls({ filters, onFilterChange }: FilterContro
 
   const handleMultiSelectChange = (
     filterKey: keyof FilterControlsProps["filters"],
-    value: string 
+    value: string // El valor que passem és el nom (string)
   ) => {
     const currentFilterValues = filters[filterKey] as string[];
     const newFilterValues = currentFilterValues.includes(value)
@@ -69,17 +63,30 @@ export default function FilterControls({ filters, onFilterChange }: FilterContro
     onFilterChange({ ...filters, [filterKey]: newFilterValues });
   };
   
-  const getButtonText = (selectedItems: string[], allItems: readonly string[] | string[], defaultText: string, singularName: string, pluralName: string) => {
-    if (selectedItems.length === 0) return defaultText;
-    if (selectedItems.length === allItems.length) return `Tots els ${pluralName}`;
-    if (selectedItems.length === 1) return selectedItems[0];
-    return `${selectedItems.length} ${pluralName} seleccionats`;
+  // Adaptem la funció per rebre la llista d'items (objectes) i la llista de noms seleccionats
+  const getButtonText = (selectedNames: string[], allItems: FirestoreItem[] | readonly string[], defaultText: string, singularName: string, pluralName: string) => {
+    // Si la llista d'items disponibles és l'array de strings com ticketStatuses o importanceLevels
+     if (!Array.isArray(allItems) || typeof allItems[0] === 'string') {
+       const allNames = allItems as readonly string[];
+       if (selectedNames.length === 0) return defaultText;
+       if (selectedNames.length === allNames.length) return `Tots els ${pluralName}`;
+       if (selectedNames.length === 1) return selectedNames[0];
+       return `${selectedNames.length} ${pluralName} seleccionats`;
+     } else { // Si la llista d'items disponibles és l'array d'objectes FirestoreItem
+        const allNames = (allItems as FirestoreItem[]).map(item => item.name);
+        if (selectedNames.length === 0) return defaultText;
+        if (selectedNames.length === allNames.length) return `Tots els ${pluralName}`;
+        if (selectedNames.length === 1) return selectedNames[0];
+        return `${selectedNames.length} ${pluralName} seleccionats`;
+     }
   };
 
-  const locationButtonText = getButtonText(filters.location, availableLocations, "Totes les ubicacions", "ubicació", "ubicacions");
-  const repairTypeButtonText = getButtonText(filters.repairType, availableRepairTypes, "Tots els tipus", "tipus", "tipus");
+  // Passem les llistes d'objectes originals i l'array de noms seleccionats de l'estat del filtre
+  const locationButtonText = getButtonText(filters.location, locations, "Totes les ubicacions", "ubicació", "ubicacions");
+  const repairTypeButtonText = getButtonText(filters.repairType, repairTypes, "Tots els tipus", "tipus", "tipus");
   const statusButtonText = getButtonText(filters.status, ticketStatuses, "Cap estat", "estat", "estats");
   const importanceButtonText = getButtonText(filters.importance, allImportanceLevels, "Totes les importàncies", "importància", "importàncies");
+
 
   return (
     <Card className="mb-6 p-4">
@@ -96,13 +103,14 @@ export default function FilterControls({ filters, onFilterChange }: FilterContro
             <DropdownMenuContent className="w-56">
               <DropdownMenuLabel>Seleccionar Ubicacions</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              {availableLocations.map((loc) => (
+              {/* Iterem sobre la llista d'objectes, però usem l'ID per a la key i el name per al text i el valor del filtre */}
+              {locations.map((loc) => (
                 <DropdownMenuCheckboxItem
-                  key={loc}
-                  checked={filters.location.includes(loc)}
-                  onCheckedChange={() => handleMultiSelectChange('location', loc)}
+                  key={loc.id} // Usem l'ID com a key
+                  checked={filters.location.includes(loc.name)} // Comprovem si el nom està seleccionat
+                  onCheckedChange={() => handleMultiSelectChange('location', loc.name)} // Passem el nom al handler
                 >
-                  {loc}
+                  {loc.name} {/* Mostrem el nom */}
                 </DropdownMenuCheckboxItem>
               ))}
             </DropdownMenuContent>
@@ -121,13 +129,14 @@ export default function FilterControls({ filters, onFilterChange }: FilterContro
             <DropdownMenuContent className="w-56">
               <DropdownMenuLabel>Seleccionar Tipus</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              {availableRepairTypes.map((type) => (
+               {/* Iterem sobre la llista d'objectes, però usem l'ID per a la key i el name per al text i el valor del filtre */}
+              {repairTypes.map((type) => (
                 <DropdownMenuCheckboxItem
-                  key={type}
-                  checked={filters.repairType.includes(type)}
-                  onCheckedChange={() => handleMultiSelectChange('repairType', type)}
+                  key={type.id} // Usem l'ID com a key
+                  checked={filters.repairType.includes(type.name)} // Comprovem si el nom està seleccionat
+                  onCheckedChange={() => handleMultiSelectChange('repairType', type.name)} // Passem el nom al handler
                 >
-                  {type}
+                  {type.name} {/* Mostrem el nom */}
                 </DropdownMenuCheckboxItem>
               ))}
             </DropdownMenuContent>

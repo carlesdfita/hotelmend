@@ -46,10 +46,26 @@ async (input) => {
   // TODO: Implement the actual search for tickets here, replace with database call
   // For now, return some dummy data.
   await new Promise(resolve => setTimeout(resolve, 500));
-  return [
-    {ticketId: '123', description: "Exemple d'incidència relacionada 1."},
-    {ticketId: '456', description: "Exemple d'incidència relacionada 2."},
+  // Simulating a case where the tool might find relevant tickets based on keywords.
+  // This is still a mock, but let's make it slightly more dynamic for demonstration.
+  const dummyData = [
+    {ticketId: 'TKT001', description: "La llum del passadís del segon pis parpelleja constantment."},
+    {ticketId: 'TKT002', description: "L'aixeta del lavabo de l'habitació 301 perd aigua."},
+    {ticketId: 'TKT003', description: "El televisor de l'habitació 102 no s'encén."},
+    {ticketId: 'TKT004', description: "Problema amb la connexió Wi-Fi a la zona de la piscina."},
+    {ticketId: 'TKT005', description: "S'ha detectat una fuita al sostre del menjador principal."},
   ];
+
+  if (input.keywords.toLowerCase().includes('llum') || input.keywords.toLowerCase().includes('bombeta')) {
+    return [dummyData[0]];
+  }
+  if (input.keywords.toLowerCase().includes('aixeta') || input.keywords.toLowerCase().includes('aigua')) {
+    return [dummyData[1], dummyData[4]];
+  }
+  if (input.keywords.toLowerCase().includes('tv') || input.keywords.toLowerCase().includes('televisor')) {
+    return [dummyData[2]];
+  }
+  return [];
 });
 
 const prompt = ai.definePrompt({
@@ -57,7 +73,7 @@ const prompt = ai.definePrompt({
   input: {schema: SuggestRelatedTicketsInputSchema},
   output: {schema: SuggestRelatedTicketsOutputSchema},
   tools: [searchTickets],
-  prompt: `Basant-se en la següent descripció de la incidència de manteniment, suggeriu incidències relacionades utilitzant l'eina searchTickets per trobar incidències anteriors rellevants.\n\nDescripció de la Incidència: {{{description}}}`,
+  prompt: `Basant-se en la següent descripció de la incidència de manteniment, suggereix incidències relacionades utilitzant l'eina searchTickets per trobar incidències anteriors rellevants.\n\nDescripció de la Incidència: {{{description}}}`,
 });
 
 const suggestRelatedTicketsFlow = ai.defineFlow(
@@ -67,7 +83,14 @@ const suggestRelatedTicketsFlow = ai.defineFlow(
     outputSchema: SuggestRelatedTicketsOutputSchema,
   },
   async input => {
-    const {output} = await prompt(input);
-    return output!;
+    try {
+      const {output} = await prompt(input);
+      return output!;
+    } catch (error) {
+      console.error("Error in suggestRelatedTicketsFlow:", error);
+      // Retorna un array buit en cas d'error per evitar que la pàgina sencera falli
+      return [];
+    }
   }
 );
+

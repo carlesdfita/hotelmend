@@ -1,8 +1,8 @@
 {
+  "/_not-found/page": "/_not-found",
   "/api/check-user-password/route": "/api/check-user-password",
   "/favicon.ico/route": "/favicon.ico",
-  "/_not-found/page": "/_not-found",
   "/page": "/",
-  "/settings/locations/page": "/settings/locations",
-  "/settings/repair-types/page": "/settings/repair-types"
+  "/settings/repair-types/page": "/settings/repair-types",
+  "/settings/locations/page": "/settings/locations"
 }

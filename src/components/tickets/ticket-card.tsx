@@ -30,6 +30,7 @@ import {
   Construction, 
   Edit3,
   MoreVertical,
+  Trash2 // Importem la icona d'eliminar
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -44,6 +45,7 @@ interface TicketCardProps {
   ticket: Ticket;
   onUpdateStatus: (ticketId: string, newStatus: TicketStatus) => void;
   onEditTicket: (ticket: Ticket) => void; 
+  onDeleteTicket: (ticketId: string) => void; // Afegim la prop per eliminar
 }
 
 const repairTypeIcons: Record<string, React.ElementType> = {
@@ -68,13 +70,22 @@ const importanceInfo: Record<ImportanceLevel, { icon: React.ElementType; variant
 };
 
 
-export default function TicketCard({ ticket, onUpdateStatus, onEditTicket }: TicketCardProps) {
+// Afegim onDeleteTicket a les props
+export default function TicketCard({ ticket, onUpdateStatus, onEditTicket, onDeleteTicket }: TicketCardProps) {
   const RepairIcon = repairTypeIcons[ticket.repairType] || Construction;
   const StatusIcon = statusInfo[ticket.status].icon;
   const ImportanceIcon = importanceInfo[ticket.importance].icon;
 
   const handleStatusChange = (newStatus: TicketStatus) => {
     onUpdateStatus(ticket.id, newStatus);
+  };
+
+  // Funció per manejar l'eliminació del tiquet
+  const handleDeleteClick = () => {
+      // Opcional: Podries afegir una confirmació aquí abans de cridar onDeleteTicket
+      if (window.confirm(`Est\u00E0s segur que vols eliminar la incidència "${ticket.description}"?`)) { // \u00E0 és la seqüència d'escapament per 'à'
+           onDeleteTicket(ticket.id);
+      }
   };
 
   return (
@@ -121,6 +132,7 @@ export default function TicketCard({ ticket, onUpdateStatus, onEditTicket }: Tic
                 Editar Incidència
               </DropdownMenuItem>
               <DropdownMenuSeparator />
+              {/* Opcions de canvi d'estat */}
               {ticket.status !== "En Progrés" && ticket.status !== "Tancada" && (
                 <DropdownMenuItem onClick={() => handleStatusChange("En Progrés")} className="text-sm">
                   Marcar En Progrés
@@ -136,6 +148,12 @@ export default function TicketCard({ ticket, onUpdateStatus, onEditTicket }: Tic
                    Reobrir Incidència
                  </DropdownMenuItem>
               )}
+              {/* Afegim l'opció d'eliminar */}
+              <DropdownMenuSeparator /> {/* Separador abans d'eliminar */}
+              <DropdownMenuItem onClick={handleDeleteClick} className="text-sm text-red-600 focus:text-red-700 focus:bg-red-50">
+                 <Trash2 className="mr-2 h-3.5 w-3.5" /> {/* Icona d'escombraries */}
+                 Eliminar Incidència
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>

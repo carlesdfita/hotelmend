@@ -8,9 +8,10 @@ interface TicketListProps {
   tickets: Ticket[];
   onUpdateStatus: (ticketId: string, newStatus: TicketStatus) => void;
   onEditTicket: (ticket: Ticket) => void; 
+  onDeleteTicket: (ticketId: string) => void; // Afegim la prop onDeleteTicket
 }
 
-export default function TicketList({ tickets, onUpdateStatus, onEditTicket }: TicketListProps) {
+export default function TicketList({ tickets, onUpdateStatus, onEditTicket, onDeleteTicket }: TicketListProps) {
   if (tickets.length === 0) {
     return (
       <div className="text-center py-10">
@@ -23,7 +24,13 @@ export default function TicketList({ tickets, onUpdateStatus, onEditTicket }: Ti
   return (
     <div className="flex flex-col gap-4"> 
       {tickets.map((ticket) => (
-        <TicketCard key={ticket.id} ticket={ticket} onUpdateStatus={onUpdateStatus} onEditTicket={onEditTicket} />
+        <TicketCard 
+          key={ticket.id} 
+          ticket={ticket} 
+          onUpdateStatus={onUpdateStatus} 
+          onEditTicket={onEditTicket} 
+          onDeleteTicket={onDeleteTicket} // Passem la prop a TicketCard
+        />
       ))}
     </div>
   );
