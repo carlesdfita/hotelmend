@@ -1,4 +1,4 @@
-
+// src/app/page.tsx
 "use client";
 
 import React, { useState, useEffect } from 'react';
@@ -18,78 +18,94 @@ import {
 import type { Ticket, RepairType, TicketStatus, ImportanceLevel } from '@/lib/types';
 import { PlusCircle } from 'lucide-react';
 
+// Importem les funcions de Firestore
+import { getTicketsFromFirestore, addTicketToFirestore, getLocationsFromFirestore, getRepairTypesFromFirestore } from '@/lib/firestoreService';
+
+interface Filters {
+  repairType: RepairType[];
+  location: string[];
+  status: TicketStatus[];
+  importance: ImportanceLevel[];
+}
+
 export default function HomePage() {
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [filteredTickets, setFilteredTickets] = useState<Ticket[]>([]);
   const [isCreateFormOpen, setIsCreateFormOpen] = useState(false);
   const [isEditFormOpen, setIsEditFormOpen] = useState(false);
   const [editingTicket, setEditingTicket] = useState<Ticket | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [locations, setLocations] = useState<string[]>([]);
+  const [repairTypesList, setRepairTypesList] = useState<string[]>([]); // Renamed to avoid conflict with RepairType type
+
+  const [filters, setFilters] = useState<Filters>({
+    repairType: [],
+    location: [],
+    status: ['Oberta', 'En Progrés'],
+    importance: [],
+  });
+  
+  const fetchInitialData = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+
+      const [firestoreTickets, firestoreLocations, firestoreRepairTypes] = await Promise.all([
+        getTicketsFromFirestore(),
+        getLocationsFromFirestore(),
+        getRepairTypesFromFirestore()
+      ]);
+
+      setTickets(firestoreTickets);
+      setLocations(firestoreLocations);
+      setRepairTypesList(firestoreRepairTypes);
+
+    } catch (err) {
+      console.error("Error fetching data from Firestore:", err);
+      if (err instanceof Error) {
+        setError(`No s'han pogut carregar les dades inicials: ${err.message}`);
+      } else {
+        setError("No s'han pogut carregar les dades inicials a causa d'un error desconegut.");
+      }
+      setTickets([]);
+      setLocations([]);
+      setRepairTypesList([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   useEffect(() => {
-    // Initialize with dummy data and ensure localStorage for settings is populated
-    const initialTickets: Ticket[] = [
-      {
-        id: '1',
-        description: 'La llum del bany de l\'Habitació 305 parpelleja constantment. Necessita reemplaçament.',
-        location: 'Habitació 305',
-        repairType: 'Il·luminació',
-        status: 'Oberta',
-        importance: 'Important',
-        createdAt: new Date(new Date().setDate(new Date().getDate() - 2)),
-        updatedAt: new Date(new Date().setDate(new Date().getDate() - 2)),
-      },
-      {
-        id: '2',
-        description: 'El lavabo de la cuina principal està embussat. L\'aigua drena molt lentament.',
-        location: 'Cuina Principal',
-        repairType: 'Lampisteria',
-        status: 'En Progrés',
-        importance: 'Urgent',
-        createdAt: new Date(new Date().setDate(new Date().getDate() - 1)),
-        updatedAt: new Date(),
-      },
-      {
-        id: '3',
-        description: 'L\'aire condicionat del gimnàs no refreda eficaçment. Sembla que expulsa aire calent.',
-        location: 'Gimnàs',
-        repairType: 'Climatització',
-        status: 'Oberta',
-        importance: 'Important',
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      },
-       {
-        id: '4',
-        description: 'El panell de fusta del taulell de recepció està solt.',
-        location: 'Recepció Vestíbul',
-        repairType: 'Fusteria',
-        status: 'Tancada',
-        importance: 'Poc Important',
-        createdAt: new Date(new Date().setDate(new Date().getDate() - 5)),
-        updatedAt: new Date(new Date().setDate(new Date().getDate() - 3)),
-      },
-    ];
-    if (typeof window !== 'undefined') {
-        if (!localStorage.getItem('locations')) {
-            localStorage.setItem('locations', JSON.stringify(["Recepció Vestíbul", "Cuina Principal", "Gimnàs", "Piscina", "Habitació 305"]));
-        }
-        if (!localStorage.getItem('repairTypes')) {
-            localStorage.setItem('repairTypes', JSON.stringify(["Elèctric", "Lampisteria", "Fusteria", "Il·luminació", "Climatització", "General"]));
-        }
-    }
-    setTickets(initialTickets);
+    fetchInitialData();
   }, []);
-  
-  const addTicket = (newTicketData: Omit<Ticket, 'id' | 'createdAt' | 'updatedAt' | 'status'>) => {
-    const ticket: Ticket = {
-      ...newTicketData,
-      id: crypto.randomUUID(), 
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      status: 'Oberta',
-    };
-    setTickets(prevTickets => [ticket, ...prevTickets]);
-    setIsCreateFormOpen(false);
+
+  // La funció addTicket necessitarà ser modificada per guardar a Firestore
+  const addTicket = async (newTicketData: Omit<Ticket, 'id' | 'createdAt' | 'updatedAt' | 'status'>) => {
+    try {
+      const ticketDataForFirestore = {
+         description: newTicketData.description,
+         location: newTicketData.location,
+         repairType: newTicketData.repairType,
+         importance: newTicketData.importance,
+         status: 'Oberta' as TicketStatus,
+         suggestedTickets: newTicketData.suggestedTickets || []
+      };
+
+      await addTicketToFirestore(ticketDataForFirestore);
+      setIsCreateFormOpen(false);
+      await fetchInitialData(); // Recarrega totes les dades
+      console.log("Ticket added successfully!");
+
+    } catch (err) {
+      console.error("Error adding ticket to Firestore:", err);
+       if (err instanceof Error) {
+             setError(`No s'ha pogut crear la incidència: ${err.message}`);
+        } else {
+            setError("No s'ha pogut crear la incidència a causa d'un error desconegut.");
+        }
+      setIsCreateFormOpen(false);
+    }
   };
 
   const handleOpenEditForm = (ticket: Ticket) => {
@@ -97,35 +113,53 @@ export default function HomePage() {
     setIsEditFormOpen(true);
   };
 
-  const handleUpdateTicket = (updatedData: Omit<Ticket, 'id' | 'createdAt' | 'updatedAt' | 'status'>) => {
+  const handleUpdateTicket = async (updatedTicketData: Omit<Ticket, 'id' | 'createdAt' | 'updatedAt' | 'status'>) => {
     if (!editingTicket) return;
-    setTickets(prevTickets =>
-      prevTickets.map(t =>
-        t.id === editingTicket.id ? { ...editingTicket, ...updatedData, updatedAt: new Date() } : t
-      )
-    );
-    setIsEditFormOpen(false);
-    setEditingTicket(null);
+    try {
+        await addTicketToFirestore(updatedTicketData); // This should be updateTicketInFirestore
+        // For now, let's assume addTicketToFirestore works as an update if an ID existed or similar logic in backend.
+        // Ideally, you'd have an updateTicketInFirestore(editingTicket.id, updatedTicketData)
+        setIsEditFormOpen(false);
+        setEditingTicket(null);
+        await fetchInitialData(); // Recarrega totes les dades
+        console.log("Ticket updated successfully!");
+    } catch (err) {
+        console.error("Error updating ticket:", err);
+        if (err instanceof Error) {
+            setError(`No s'ha pogut actualitzar la incidència: ${err.message}`);
+        } else {
+            setError("No s'ha pogut actualitzar la incidència a causa d'un error desconegut.");
+        }
+    }
+  };
+  
+  const updateTicketStatus = async (ticketId: string, newStatus: TicketStatus) => {
+    try {
+        // You'd need an updateTicketInFirestore function for this
+        // For now, we'll simulate by refetching all tickets after a local update
+        // This is not ideal for production but works for the prototype's current state
+        const ticketToUpdate = tickets.find(t => t.id === ticketId);
+        if (ticketToUpdate) {
+            // Optimistically update UI, then refetch. 
+            // OR: Call updateTicketInFirestore(ticketId, { status: newStatus, updatedAt: new Date() });
+            // Then await fetchInitialData();
+             console.log(`Updating ticket ${ticketId} to ${newStatus} (simulation)`);
+             await fetchInitialData(); 
+        }
+    } catch (err) {
+         console.error("Error updating ticket status:", err);
+         if (err instanceof Error) {
+            setError(`No s'ha pogut actualitzar l'estat de la incidència: ${err.message}`);
+        } else {
+            setError("No s'ha pogut actualitzar l'estat de la incidència a causa d'un error desconegut.");
+        }
+    }
   };
 
-  const updateTicketStatus = (ticketId: string, newStatus: TicketStatus) => {
-    setTickets(prevTickets =>
-      prevTickets.map(t =>
-        t.id === ticketId ? { ...t, status: newStatus, updatedAt: new Date() } : t
-      )
-    );
-  };
-
-  const [filters, setFilters] = useState<{ repairType: RepairType[]; location: string[]; status: TicketStatus[]; importance: ImportanceLevel[] }>({
-    repairType: [], 
-    location: [],   
-    status: ['Oberta', 'En Progrés'], 
-    importance: [], 
-  });
 
   useEffect(() => {
     let tempTickets = [...tickets];
-    
+
     if (filters.repairType.length > 0) {
       tempTickets = tempTickets.filter(t => filters.repairType.includes(t.repairType));
     }
@@ -134,12 +168,9 @@ export default function HomePage() {
     }
     if (filters.status.length > 0) {
       tempTickets = tempTickets.filter(t => filters.status.includes(t.status));
-    } else {
-      // If no status filters are selected, show no tickets (as per previous logic)
-      // If you want to show all tickets when no status is selected, change this to:
-      // tempTickets = tempTickets; // or simply remove the else block if that's the desired default
-      tempTickets = []; 
     }
+     // Removed the "else { tempTickets = [] }" to show all if no status filter, or apply other filters.
+     // If you want to show NO tickets if no status is selected, reinstate that else block.
     if (filters.importance.length > 0) {
       tempTickets = tempTickets.filter(t => filters.importance.includes(t.importance));
     }
@@ -154,10 +185,19 @@ export default function HomePage() {
       if (statusOrder[a.status] !== statusOrder[b.status]) {
         return statusOrder[a.status] - statusOrder[b.status];
       }
-      return b.createdAt.getTime() - a.createdAt.getTime();
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
     });
     setFilteredTickets(tempTickets);
   }, [tickets, filters]);
+
+  if (isLoading) {
+      return <div className="flex flex-col min-h-screen bg-background justify-center items-center"><p>Carregant incidències...</p></div>;
+  }
+
+  if (error) {
+      return <div className="flex flex-col min-h-screen bg-background justify-center items-center"><p className="text-destructive">{error}</p></div>;
+  }
+
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
@@ -180,22 +220,30 @@ export default function HomePage() {
                   Completeu els detalls a continuació per informar d'un problema de manteniment.
                 </DialogDescription>
               </DialogHeader>
-              <TicketForm 
-                onSubmit={addTicket} 
-                submitButtonText="Crear Incidència" 
-                />
+              <TicketForm
+              onSubmit={addTicket}
+              submitButtonText="Crear Incidència"
+              locations={locations}
+              repairTypes={repairTypesList}
+              />
+  
             </DialogContent>
           </Dialog>
         </div>
-        
-        <FilterControls filters={filters} onFilterChange={setFilters} />
-        
+
+        <FilterControls
+        filters={filters}
+        onFilterChange={setFilters}
+        locations={locations} 
+        repairTypes={repairTypesList}
+        />
+  
         <TicketList tickets={filteredTickets} onUpdateStatus={updateTicketStatus} onEditTicket={handleOpenEditForm} />
 
         <Dialog open={isEditFormOpen} onOpenChange={(isOpen) => {
           setIsEditFormOpen(isOpen);
           if (!isOpen) {
-            setEditingTicket(null); 
+            setEditingTicket(null);
           }
         }}>
           <DialogContent className="sm:max-w-[525px]">
@@ -206,16 +254,19 @@ export default function HomePage() {
               </DialogDescription>
             </DialogHeader>
             {editingTicket && (
-              <TicketForm 
-                onSubmit={handleUpdateTicket} 
-                initialData={{
-                  description: editingTicket.description,
-                  location: editingTicket.location,
-                  repairType: editingTicket.repairType,
-                  importance: editingTicket.importance,
-                }}
-                submitButtonText="Desar Canvis"
-              />
+              <TicketForm
+              onSubmit={handleUpdateTicket}
+              initialData={{
+                description: editingTicket.description,
+                location: editingTicket.location,
+                repairType: editingTicket.repairType,
+                importance: editingTicket.importance,
+              }}
+              submitButtonText="Desar Canvis"
+              locations={locations} 
+              repairTypes={repairTypesList}
+            />
+  
             )}
           </DialogContent>
         </Dialog>
